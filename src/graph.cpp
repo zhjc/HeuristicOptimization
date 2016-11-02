@@ -131,6 +131,10 @@ hoStatus Graph::InitGraphFromFile(const string& strfile)
 		in >> buffer;
 	}
 
+	cout << "Load graph file succeed!\n";
+
+	in.close();
+
 	//PringGraph();
 
 	return hoOK;

@@ -60,8 +60,11 @@ hoStatus GraphColoring::TS()
 	//printAdjacency(coloradj);
 
 	int niter = 0;
-	int fixlong = 28;//52colors--28;
-	float proplong = 0.6f;
+	int fixlong = 18; // 52colors--[28];  50colors--[21-0.7]
+	float proplong = 0.8f;
+
+	cout << "fixlong: " << fixlong << "\n";
+	cout << "proplong: " << proplong << "\n";
 
 	m_maxiter = 8000000;
 	m_enditer = m_maxiter;
@@ -72,7 +75,7 @@ hoStatus GraphColoring::TS()
 
 	int oldC, tabuT;
 
-	while (m_conflicts>0 && niter<m_enditer)
+	while (m_conflicts>0 /*&& niter<m_enditer*/)
 	{
 		niter++;
 
@@ -125,7 +128,7 @@ int GraphColoring::setTabu(int **adjColors, int **tabuList, OneMove *move, int f
 {
 	int propValue = (int)floor(propLong*(nodesConficting(adjColors)));
 
-	tabuList[move->id - 1][move->color] = nIt + fixLong + propValue;
+	tabuList[move->id - 1][move->color] = nIt + rand()%fixLong + propValue;
 
 	return tabuList[move->id - 1][move->color];
 }

@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
 
 	// parse command line arguments
 	string strinsfile = argv[1];
-	int numc = 52;
+	int numc = 49;
 
 	do
 	{
