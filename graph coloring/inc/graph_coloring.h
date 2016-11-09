@@ -56,6 +56,11 @@ private:
 	int m_enditer;
 	int m_conflicts;
 	double m_lstime;
+
+	OneMove* m_bestmoves;
+	int m_nbestmove;
+	OneMove* m_tabubestmoves;
+	int m_ntabubestmove;
 };
 
 HO_NAMESPACE_END

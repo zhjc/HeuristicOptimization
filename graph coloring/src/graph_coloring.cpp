@@ -19,6 +19,8 @@ GraphColoring::GraphColoring()
 	, m_maxiter(0)
 	, m_iternum(0)
 	, m_lstime(0.0)
+	, m_nbestmove(0)
+	, m_ntabubestmove(0)
 {
 	// nothing to do
 }
@@ -52,6 +54,9 @@ hoStatus GraphColoring::TS()
 		bestsol[i] = -1;
 	}
 
+	m_bestmoves = new OneMove[2000];
+	m_tabubestmoves = new OneMove[2000];
+
 	OneMove* move = new OneMove();
 
 	time_t starttime, stoptime;
@@ -77,6 +82,8 @@ hoStatus GraphColoring::TS()
 
 	int oldC, tabuT;
 
+	srand((unsigned)time(NULL));
+
 	while (m_conflicts>0 /*&& niter<m_enditer*/)
 	{
 		niter++;
@@ -91,17 +98,13 @@ hoStatus GraphColoring::TS()
 		oldC = v->color;
 		v->color = move->bestnew;
 
-#if HO_DEBUG
-		cout << "move node " << move->id << " color " << move->color << " to new color " << move->bestnew << "\n";
-		//printAdjacency(coloradj);
-#endif
-		tabuT = setTabu(coloradj, tabulist, move, fixlong, proplong, niter);
-#if HO_DEBUG
-		cout << "iter " << niter << " tabu tenure " << tabuT << "\n";
-#endif
 		updateAdjacency(coloradj, move);
 		m_conflicts = nodesConficting(coloradj);
+		tabuT = setTabu(coloradj, tabulist, move, fixlong, proplong, niter);
+
 #if HO_DEBUG
+		cout << "move node " << move->id << " color " << move->color << " to color " << move->bestnew << "\n";
+		cout << "iter " << niter << " tenure " << tabuT << "\n";
 		cout << "conflicts " << m_conflicts << "\n";
 #endif
 
@@ -138,11 +141,12 @@ hoStatus GraphColoring::TS()
 
 int GraphColoring::setTabu(int **adjColors, int **tabuList, OneMove *move, int fixLong, float propLong, int nIt)
 {
-	int propValue = (int)floor(propLong*(nodesConficting(adjColors)));
+	int propval = (int)(propLong * m_conflicts);
+	int tabuval = nIt + rand()%fixLong + propval;
 
-	tabuList[move->id - 1][move->color] = nIt + rand()%fixLong + propValue;
+	tabuList[move->id - 1][move->color] = tabuval;
 
-	return tabuList[move->id - 1][move->color];
+	return tabuval;
 }
 
 void GraphColoring::updateAdjacency(int **adjColors, OneMove *move)
@@ -301,6 +305,7 @@ OneMove* GraphColoring::findBestOneMove(int** coloradj, int** tabulist, OneMove*
 {
 	int i, profit;
 	int best = 1000;
+	int tabubest = 1000;
 
 	OneMove bestmove;
 	bestmove.id = 1;
@@ -310,6 +315,7 @@ OneMove* GraphColoring::findBestOneMove(int** coloradj, int** tabulist, OneMove*
 	int bestcount = 0;
 
 	bool choose = false;
+	bool tabuchoose = false;
 
 	Vertex* cur = m_Graph->nodesList->next;
 	while (cur != m_Graph->nodesList)
@@ -320,9 +326,10 @@ OneMove* GraphColoring::findBestOneMove(int** coloradj, int** tabulist, OneMove*
 			{
 				if (i != cur->color)
 				{
+					profit = moveProfit(coloradj, cur, i);
+
 					if (!isTabu(coloradj, tabulist, cur, i, niter, nc, bestnc))
 					{
-						profit = moveProfit(coloradj, cur, i);
 						if (profit < best)
 						{
 							choose = true;
@@ -331,17 +338,48 @@ OneMove* GraphColoring::findBestOneMove(int** coloradj, int** tabulist, OneMove*
 							bestmove.color = cur->color;
 							bestmove.bestnew = i;
 							bestcount = 1;
+
+							m_nbestmove = 1;
+							m_bestmoves[0].id = cur->id;
+							m_bestmoves[0].color = cur->color;
+							m_bestmoves[0].bestnew = i;
 						}
-						/*else if (profit == best)
+						else if (profit == best)
 						{
-							bestcount++;
-							if (rand()%bestcount == 0)
+							m_bestmoves[m_nbestmove].id = cur->id;
+							m_bestmoves[m_nbestmove].color = cur->color;
+							m_bestmoves[m_nbestmove].bestnew = i;
+							m_nbestmove++;
+
+							if (m_nbestmove+1 > 2000)
 							{
-								bestmove.id = cur->id;
-								bestmove.color = cur->color;
-								bestmove.bestnew = i;
+								break;
 							}
-						}*/
+						}
+					}
+					else
+					{
+						if (profit < tabubest)
+						{
+							tabuchoose = true;
+							tabubest = profit;
+							m_tabubestmoves[0].id = cur->id;
+							m_tabubestmoves[0].color = cur->color;
+							m_tabubestmoves[0].bestnew = i;
+							m_ntabubestmove = 1;
+						}
+						else if (profit == tabubest)
+						{
+							m_tabubestmoves[m_ntabubestmove].id = cur->id;
+							m_tabubestmoves[m_ntabubestmove].color = cur->color;
+							m_tabubestmoves[m_ntabubestmove].bestnew = i;
+							m_ntabubestmove++;
+
+							if (m_ntabubestmove + 1 > 2000)
+							{
+								break;
+							}
+						}
 					}
 				}
 			}
@@ -350,6 +388,35 @@ OneMove* GraphColoring::findBestOneMove(int** coloradj, int** tabulist, OneMove*
 		cur = cur->next;
 	}
 
+	bool usetabu = false;
+	if (tabuchoose)
+	{
+		if (choose)
+		{
+			profit = coloradj[m_tabubestmoves[0].id - 1][m_tabubestmoves[0].bestnew] - 
+				coloradj[m_tabubestmoves[0].id - 1][m_tabubestmoves[0].color];
+			if (tabubest<best && (nc+profit)<bestnc)
+			{
+				usetabu = true;
+				int k = (m_ntabubestmove > 1) ? (rand() % m_ntabubestmove) : 0;
+				move->id = m_tabubestmoves[k].id;
+				move->color = m_tabubestmoves[k].color;
+				move->bestnew = m_tabubestmoves[k].bestnew;
+
+				tabulist[m_tabubestmoves[k].id - 1][m_tabubestmoves[k].bestnew] = 0;
+
+				m_nbestmove = 0;
+				m_ntabubestmove = 0;
+
+				return move;
+			}
+		} 
+		else
+		{
+			// nothing to do
+		}
+	}
+	
 	if (choose)
 	{
 		move->id = bestmove.id;
@@ -361,49 +428,69 @@ OneMove* GraphColoring::findBestOneMove(int** coloradj, int** tabulist, OneMove*
 		move->id = -1;
 		move->color = bestmove.color;
 		move->bestnew = bestmove.bestnew;
+
+		m_nbestmove = 0;
+		m_ntabubestmove = 0;
+
+		return move;
 	}
+
+	if (m_nbestmove > 1)
+	{
+		int k = rand() % m_nbestmove;
+		move->id = m_bestmoves[k].id;
+		move->color = m_bestmoves[k].color;
+		move->bestnew = m_bestmoves[k].bestnew;
+	}
+
+	m_nbestmove = 0;
+	m_ntabubestmove = 0;
 
 	return move;
 }
 
 int GraphColoring::moveProfit(int** coloradj, Vertex* cur, int newcolor)
 {
-	int profit = 0;
-
-	profit = -coloradj[cur->id - 1][cur->color];
-	profit += coloradj[cur->id - 1][newcolor];
-
-	return profit;
+	return coloradj[cur->id - 1][newcolor] - coloradj[cur->id - 1][cur->color];
 }
 
 bool GraphColoring::isTabu(int** coloradj, int** tabulist, Vertex* cur, int newcolor, int nit, int nc, int bestnc)
 {
-	if (tabulist[cur->id - 1][newcolor] != 0)
+	if (tabulist[cur->id - 1][newcolor] > nit)
 	{
-		if (nit > tabulist[cur->id - 1][newcolor])
-		{
-			return false;
-		}
-		else
-		{
-			int profit = moveProfit(coloradj, cur, newcolor);
-
-			if (profit+nc < bestnc)
-			{
-				return false;
-			} 
-			else
-			{
-				return true;
-			}
-
-			return true;
-		}
-	} 
+		return true;
+	}
 	else
 	{
 		return false;
 	}
+
+// 	if (tabulist[cur->id - 1][newcolor] != 0)
+// 	{
+// 		if (nit > tabulist[cur->id - 1][newcolor])
+// 		{
+// 			return false;
+// 		}
+// 		else
+// 		{
+// 			/*int profit = moveProfit(coloradj, cur, newcolor);
+// 
+// 			if (profit+nc < bestnc)
+// 			{
+// 				return false;
+// 			} 
+// 			else
+// 			{
+// 				return true;
+// 			}*/
+// 
+// 			return true;
+// 		}
+// 	} 
+// 	else
+// 	{
+// 		return false;
+// 	}
 }
 
 void GraphColoring::printConflictingNodesList(int **adjColors)
@@ -440,6 +527,8 @@ void GraphColoring::printAdjacency(int **adjColors)
 GraphColoring::~GraphColoring()
 {
 	delete m_Graph;
+	delete[] m_bestmoves;
+	delete[] m_tabubestmoves;
 	m_Graph = hoNull;
 }
 
