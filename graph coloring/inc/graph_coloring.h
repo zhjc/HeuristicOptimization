@@ -12,55 +12,55 @@ class Graph;
 
 struct OneMove
 {
-	int id;
-	int color;
-	int bestnew;
+    int id;
+    int color;
+    int bestnew;
 };
 
 class GraphColoring{
 public:
-	GraphColoring();
+    GraphColoring();
 
-	~GraphColoring();
+    ~GraphColoring();
 
 public:
-	hoStatus TS();
-	hoStatus VNS();
-	hoStatus SA();
+    hoStatus TS();
+    hoStatus VNS();
+    hoStatus SA();
 
-	hoStatus LoadInsFile(const std::string& insfile, int numc);
+    hoStatus LoadInsFile(const std::string& insfile, int numc);
 
-	hoStatus RandomInitColor();
+    hoStatus RandomInitColor();
 
-	hoStatus PrintTabuSolInfo();
+    hoStatus PrintTabuSolInfo();
 
 private:
-	void buildColorAdj(int** coloradj);
-	void savebestsol(int* sols);
-	int nodesConficting(int** coloradj);
-	OneMove* findBestOneMove(int** coloradj, int** tabulist, OneMove* move, int niter, int nc, int bestnc);
-	int moveProfit(int** coloradj, Vertex* cur, int newcolor);
-	bool isTabu(int** coloradj, int** tabulist, Vertex* cur, int newcolor, int nit, int nc, int bestnc);
+    void buildColorAdj(int** coloradj);
+    void savebestsol(int* sols);
+    int nodesConficting(int** coloradj);
+    OneMove* findBestOneMove(int** coloradj, int** tabulist, OneMove* move, int niter, int nc, int bestnc);
+    int moveProfit(int** coloradj, Vertex* cur, int newcolor);
+    bool isTabu(int** coloradj, int** tabulist, Vertex* cur, int newcolor, int nit, int nc, int bestnc);
 
-	int setTabu(int **adjColors, int **tabuList, OneMove *move, int fixLong, float propLong, int nIt);
-	void updateAdjacency(int **adjColors, OneMove *move);
+    int setTabu(int **adjColors, int **tabuList, OneMove *move, int fixLong, float propLong, int nIt);
+    void updateAdjacency(int **adjColors, OneMove *move);
 
-	void printConflictingNodesList(int **adjColors);
-	void printAdjacency(int **adjColors);
+    void printConflictingNodesList(int **adjColors);
+    void printAdjacency(int **adjColors);
 private:
-	Graph* m_Graph;
-	int numColors;
+    Graph* m_Graph;
+    int numColors;
 
-	int m_iternum;
-	int m_maxiter;
-	int m_enditer;
-	int m_conflicts;
-	double m_lstime;
+    int m_iternum;
+    int m_maxiter;
+    int m_enditer;
+    int m_conflicts;
+    double m_lstime;
 
-	OneMove* m_bestmoves;
-	int m_nbestmove;
-	OneMove* m_tabubestmoves;
-	int m_ntabubestmove;
+    OneMove* m_bestmoves;
+    int m_nbestmove;
+    OneMove* m_tabubestmoves;
+    int m_ntabubestmove;
 };
 
 HO_NAMESPACE_END

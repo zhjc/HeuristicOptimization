@@ -12,68 +12,68 @@ class GraphColoring;
 
 struct Adjacent{
 public:
-	Adjacent(Vertex* v):vertex(v), prev(hoNull), next(hoNull){}
+    Adjacent(Vertex* v) :vertex(v), prev(hoNull), next(hoNull){}
 
-	~Adjacent(){ prev = hoNull; next = hoNull; }
+    ~Adjacent(){ prev = hoNull; next = hoNull; }
 
-	Vertex* vertex;
+    Vertex* vertex;
 
-	Adjacent* prev;
-	Adjacent* next;
+    Adjacent* prev;
+    Adjacent* next;
 };
 
 struct Vertex{
 public:
-	Vertex(int id);
-	~Vertex();
+    Vertex(int id);
+    ~Vertex();
 
-	void appendAdj(Adjacent* adj);
-	void insertEdges(Adjacent* adj, Adjacent* curadj);
-	void deleteEdges(Adjacent** adj);
+    void appendAdj(Adjacent* adj);
+    void insertEdges(Adjacent* adj, Adjacent* curadj);
+    void deleteEdges(Adjacent** adj);
 
-	int id;
-	int color;
+    int id;
+    int color;
 
-	Vertex* prev;
-	Vertex* next;
+    Vertex* prev;
+    Vertex* next;
 
-	Adjacent* adja;
-	int numAdj;
+    Adjacent* adja;
+    int numAdj;
 };
 
 class Graph{
 public:
-	Graph();
+    Graph();
 
-	hoStatus Init();
-	hoStatus InitGraphFromFile(const std::string& strfile);
+    hoStatus Init();
+    hoStatus InitGraphFromFile(const std::string& strfile);
 
-	virtual ~Graph();
+    virtual ~Graph();
 
 public:
-	void AppendVertex(Vertex* v);
-	void InsertVertex(Vertex* v, Vertex* curv);
-	void deleteVertex(Vertex** v);
+    void AppendVertex(Vertex* v);
+    void InsertVertex(Vertex* v, Vertex* curv);
+    void deleteVertex(Vertex** v);
 
-	bool emptyNodes();
-	Vertex* firstNodes();
-	Vertex* nextNodes(Vertex* cur);
+    bool emptyNodes();
+    Vertex* firstNodes();
+    Vertex* nextNodes(Vertex* cur);
 
-	void PringGraph();
+    void PringGraph();
 
-	Vertex* GetVertexFromList(int id);
-
-private:
-
-	void InitVertex();
+    Vertex* GetVertexFromList(int id);
 
 private:
-	int numNodes;
-	int numEdges;
 
-	Vertex* nodesList;
+    void InitVertex();
 
-	friend class GraphColoring;
+private:
+    int numNodes;
+    int numEdges;
+
+    Vertex* nodesList;
+
+    friend class GraphColoring;
 };
 
 HO_NAMESPACE_END

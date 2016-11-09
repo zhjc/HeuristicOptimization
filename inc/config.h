@@ -16,12 +16,12 @@
 // ÔËÐÐ×´Ì¬
 typedef enum
 {
-	hoOK = 0,
-	hoWarning,
-	hoError,
-	hoFatal,
-	hoMemoryOut,
-	hoFileOpenError
+    hoOK = 0,
+    hoWarning,
+    hoError,
+    hoFatal,
+    hoMemoryOut,
+    hoFileOpenError
 } hoStatus;
 
 #define hoNull 0 
