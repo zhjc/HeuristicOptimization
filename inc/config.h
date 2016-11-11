@@ -21,7 +21,8 @@ typedef enum
     hoError,
     hoFatal,
     hoMemoryOut,
-    hoFileOpenError
+    hoFileOpenError,
+    hoInvalidFile
 } hoStatus;
 
 #define hoNull 0 
