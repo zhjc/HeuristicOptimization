@@ -38,8 +38,9 @@ private:
     void ReleaseMemory();
     void InitData();
 
-    void PrintMatrix();
+    void PrintDistanceMatrix();
     void GetShortPathByPloyd();
+    void QuickSort(int a[], int curr, int l, int r);
 
 private:
     FTable* m_fTable;
@@ -56,8 +57,9 @@ private:
     int* m_cursols;
     
     double ** m_distanceGraph;
-    double ** m_disSortedGraph;
-    double ** m_disSequenceGraph;
+    int ** m_disSortedGraph;
+    int ** m_disSequenceGraph;
+
 };
 
 HO_NAMESPACE_END

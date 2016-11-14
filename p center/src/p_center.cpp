@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
+#include <climits>
 
 using namespace std;
 
@@ -22,6 +23,32 @@ struct tspPoint
     double x;
     double y;
 };
+
+template<class T>
+void PrintOneColumn(T a[], int size)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        cout << a[i] << " ";
+    }
+
+    cout << endl;
+}
+
+template<class T>
+void PrintMatrix(T** a, int nr, int nc)
+{
+    cout << "matrix:\n";
+    for (int i = 0; i < nr; ++i)
+    {
+        for (int j = 0; j < nc; ++j)
+        {
+            cout << a[i][j] << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+}
 
 PCenter::PCenter()
 : m_nFacility(0)
@@ -70,6 +97,11 @@ hoStatus PCenter::ReadFile(const string& file)
         if (ft == DIST_TYPE)
         {
             fstream in(file);
+            if (!in.is_open())
+            {
+                return hoInvalidFile;
+            }
+
             in >> m_nNodes >> m_nEdges >> m_nFacility;
 
             st = AllocMemory();
@@ -97,8 +129,15 @@ hoStatus PCenter::ReadFile(const string& file)
         else if (ft == COOR_TYPE)
         {
             fstream in(file);
+            if (!in.is_open())
+            {
+                return hoInvalidFile;
+            }
 
             in >> m_nNodes;
+
+            m_nFacility = m_nNodes / 15; // TODO: set number of facility
+
             st = AllocMemory();
             if (st != hoOK)
             {
@@ -146,14 +185,19 @@ hoStatus PCenter::ReadFile(const string& file)
             st = hoInvalidFile;
         }
 
+
         // sort distance matrix
         for (int i = 0; i < m_nNodes; ++i)
         {
-            for (int j = 0; j < m_nNodes; ++j)
-            {
-
-            }
+            //PrintOneColumn(m_disSortedGraph[i], m_nNodes);
+            //QuickSort(m_disSortedGraph[i], i, 0, m_nNodes - 1);
+            //PrintOneColumn(m_disSortedGraph[i], m_nNodes);
+            //PrintOneColumn(m_distanceGraph[i], m_nNodes);
         }
+
+        PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
+
+        
 
     } while (false);
 
@@ -163,8 +207,8 @@ hoStatus PCenter::ReadFile(const string& file)
 hoStatus PCenter::AllocMemory()
 {
     m_distanceGraph = new double *[m_nNodes];
-    m_disSortedGraph = new double *[m_nNodes];
-    m_disSequenceGraph = new double *[m_nNodes];
+    m_disSortedGraph = new int *[m_nNodes];
+    m_disSequenceGraph = new int *[m_nNodes];
     if (m_distanceGraph==hoNull || m_disSortedGraph==hoNull ||
         m_disSequenceGraph==hoNull)
     {
@@ -175,8 +219,8 @@ hoStatus PCenter::AllocMemory()
     for (int i = 0; i < m_nNodes; ++i)
     {
         m_distanceGraph[i] = new double[m_nNodes];
-        m_disSortedGraph[i] = new double[m_nNodes];
-        m_disSequenceGraph[i] = new double[m_nNodes];
+        m_disSortedGraph[i] = new int[m_nNodes];
+        m_disSequenceGraph[i] = new int[m_nNodes];
         if (m_distanceGraph[i] == hoNull || m_disSortedGraph[i]==hoNull ||
             m_disSequenceGraph[i] == hoNull)
         {
@@ -255,7 +299,7 @@ void PCenter::InitData()
         for (int j = 0; j < m_nNodes; j++)
         {
             m_distanceGraph[i][j] = 0;
-            m_disSortedGraph[i][j] = 0;
+            m_disSortedGraph[i][j] = j;
             m_disSequenceGraph[i][j] = j;
         }
     }
@@ -273,9 +317,9 @@ void PCenter::InitData()
     }
 }
 
-void PCenter::PrintMatrix()
+void PCenter::PrintDistanceMatrix()
 {
-    cout << "current matrix:\n";
+    cout << "distance matrix:\n";
     for (int i = 0; i < m_nNodes; ++i)
     {
         for (int j = 0; j < m_nNodes; ++j)
@@ -322,6 +366,48 @@ void PCenter::GetShortPathByPloyd()
             }
         }
     }
+}
+
+void PCenter::QuickSort(int a[], int curr, int l, int r)
+{
+    if (r <= l)
+    {
+        return;
+    }
+
+    int i = l-1;
+    int j = r;
+
+    int t = a[r];
+
+    for (;;)
+    {
+        while (m_distanceGraph[curr][a[++i]] < m_distanceGraph[curr][t])
+        {
+            // nothing to do
+        }
+
+        while (m_distanceGraph[curr][t] < m_distanceGraph[curr][a[--j]])
+        {
+            if (j == l)break;
+        }
+
+        if (i >= j)
+        {
+            break;
+        }
+
+        int tmp = a[i];
+        a[i] = a[j];
+        a[j] = tmp;
+    }
+
+    int tmp = a[i];
+    a[i] = a[r];
+    a[r] = tmp;
+
+    QuickSort(a, curr, l, i - 1);
+    QuickSort(a, curr, i + 1, r);
 }
 
 PCenter::~PCenter()
