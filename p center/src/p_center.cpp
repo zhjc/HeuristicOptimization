@@ -5,8 +5,12 @@
 #include <cmath>
 #include <cassert>
 #include <climits>
+#include <ctime>
 
 using namespace std;
+
+#define FACILITY_NODE 1
+#define USER_NODE 0
 
 HO_NAMESPACE_BEGIN(pcenter)
 
@@ -23,6 +27,8 @@ struct tspPoint
     double x;
     double y;
 };
+
+fileType GetInputFileType(const string& file);
 
 template<class T>
 void PrintOneColumn(T a[], int size)
@@ -52,6 +58,7 @@ void PrintMatrix(T** a, int nr, int nc)
 
 PCenter::PCenter()
 : m_nFacility(0)
+, m_nCurFacility(0)
 , m_nNodes(0)
 , m_nEdges(0)
 , m_curobjval(0)
@@ -63,28 +70,88 @@ PCenter::PCenter()
 , m_fTable(hoNull)
 , m_bestsols(hoNull)
 , m_cursols(hoNull)
+, m_Sc(0)
 {
     // nothing to do
 }
 
-fileType GetInputFileType(const string& file)
+hoStatus PCenter::Run()
 {
-    string strfilename = file;
-    size_t index = strfilename.find_last_of(".");
-    if (index != string::npos)
+    hoStatus st = hoOK;
+
+    unsigned int seed = (unsigned int)time(hoNull);
+    srand(seed);
+    
+    do 
     {
-        string strext = strfilename.substr(index, strfilename.size() - 1);
-        if (strext == ".txt")
+        // generate initial solution
+        st = GenerateInitSol();
+        if (st != hoOK)
         {
-            return DIST_TYPE;
+            break;
         }
-        else if (strext == ".tsp")
+
+        // local search
+        st = LocalSearch();
+        if (st != hoOK)
         {
-            return COOR_TYPE;
+            break;
         }
+
+        PrintResultInfo();
+    } while (false);
+
+    return st;
+}
+
+hoStatus PCenter::GenerateInitSol()
+{
+    hoStatus st = hoOK;
+
+    int firstnode = rand() % m_nNodes;
+
+    m_cursols[firstnode] = FACILITY_NODE;
+    AddFacility(firstnode);
+
+    while (m_nCurFacility < m_nFacility)
+    {
+        int curfacility = 0;
+        m_cursols[curfacility] = FACILITY_NODE;
+        AddFacility(curfacility);
     }
 
-    return NONE_TYPE;
+    return st;
+}
+
+hoStatus PCenter::LocalSearch()
+{
+    hoStatus st = hoOK;
+    return st;
+}
+
+void PCenter::PrintResultInfo()
+{
+    // TODO
+}
+
+hoStatus PCenter::AddFacility(int facility)
+{
+    hoStatus st = hoOK;
+    m_nCurFacility++;
+    return st;
+}
+
+hoStatus PCenter::RemoveFacility(int facility)
+{
+    hoStatus st = hoOK;
+    m_nCurFacility--;
+    return st;
+}
+
+hoStatus PCenter::FindPair(int curf, SwapPair* sp)
+{
+    hoStatus st = hoOK;
+    return st;
 }
 
 hoStatus PCenter::ReadFile(const string& file)
@@ -202,8 +269,11 @@ hoStatus PCenter::ReadFile(const string& file)
             }
         }
 
+        //cout << "distance matrix:" << endl;
         //PrintDistanceMatrix();
+        //cout << "sorted distance matrix:" << endl;
         //PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
+        //cout << "number distance matrix:" << endl;
         //PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes);
     } while (false);
 
@@ -424,6 +494,26 @@ void PCenter::QuickSort(int a[], int curr, int l, int r)
 PCenter::~PCenter()
 {
     ReleaseMemory();
+}
+
+fileType GetInputFileType(const string& file)
+{
+    string strfilename = file;
+    size_t index = strfilename.find_last_of(".");
+    if (index != string::npos)
+    {
+        string strext = strfilename.substr(index, strfilename.size() - 1);
+        if (strext == ".txt")
+        {
+            return DIST_TYPE;
+        }
+        else if (strext == ".tsp")
+        {
+            return COOR_TYPE;
+        }
+    }
+
+    return NONE_TYPE;
 }
 
 HO_NAMESPACE_END

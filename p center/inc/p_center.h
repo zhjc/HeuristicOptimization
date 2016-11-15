@@ -31,6 +31,16 @@ public:
     PCenter();
     ~PCenter();
 
+    hoStatus Run();
+
+    hoStatus GenerateInitSol();
+    hoStatus LocalSearch();
+    void PrintResultInfo();
+
+    hoStatus AddFacility(int facility);
+    hoStatus RemoveFacility(int facility);
+    hoStatus FindPair(int curf, SwapPair* sp);
+
     hoStatus ReadFile(const std::string& file);
 
 private:
@@ -48,6 +58,7 @@ private:
 
     int m_nNodes;
     int m_nFacility;
+    int m_nCurFacility;
     int m_nEdges;
 
     int m_bestobjval;
@@ -60,6 +71,7 @@ private:
     int ** m_disSortedGraph;
     int ** m_disSequenceGraph;
 
+    int m_Sc;
 };
 
 HO_NAMESPACE_END
