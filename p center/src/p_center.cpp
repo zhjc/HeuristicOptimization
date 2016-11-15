@@ -185,20 +185,26 @@ hoStatus PCenter::ReadFile(const string& file)
             st = hoInvalidFile;
         }
 
-
         // sort distance matrix
         for (int i = 0; i < m_nNodes; ++i)
         {
             //PrintOneColumn(m_disSortedGraph[i], m_nNodes);
-            //QuickSort(m_disSortedGraph[i], i, 0, m_nNodes - 1);
+            QuickSort(m_disSortedGraph[i], i, 0, m_nNodes - 1);
             //PrintOneColumn(m_disSortedGraph[i], m_nNodes);
             //PrintOneColumn(m_distanceGraph[i], m_nNodes);
         }
 
-        PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
+		for (int i = 0; i < m_nNodes; ++i)
+		{
+			for (int j = 0; j < m_nNodes; ++j)
+			{
+				m_disSequenceGraph[i][m_disSortedGraph[i][j]] = j;
+			}
+		}
 
-        
-
+		//PrintDistanceMatrix();
+		//PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
+		//PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes);
     } while (false);
 
     return st;
@@ -370,6 +376,7 @@ void PCenter::GetShortPathByPloyd()
 
 void PCenter::QuickSort(int a[], int curr, int l, int r)
 {
+	// partition
     if (r <= l)
     {
         return;
@@ -389,7 +396,10 @@ void PCenter::QuickSort(int a[], int curr, int l, int r)
 
         while (m_distanceGraph[curr][t] < m_distanceGraph[curr][a[--j]])
         {
-            if (j == l)break;
+			if (j == l)
+			{
+				break;
+			}
         }
 
         if (i >= j)
@@ -406,6 +416,7 @@ void PCenter::QuickSort(int a[], int curr, int l, int r)
     a[i] = a[r];
     a[r] = tmp;
 
+	// quick sort
     QuickSort(a, curr, l, i - 1);
     QuickSort(a, curr, i + 1, r);
 }
