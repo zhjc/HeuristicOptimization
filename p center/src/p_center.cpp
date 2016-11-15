@@ -194,17 +194,17 @@ hoStatus PCenter::ReadFile(const string& file)
             //PrintOneColumn(m_distanceGraph[i], m_nNodes);
         }
 
-		for (int i = 0; i < m_nNodes; ++i)
-		{
-			for (int j = 0; j < m_nNodes; ++j)
-			{
-				m_disSequenceGraph[i][m_disSortedGraph[i][j]] = j;
-			}
-		}
+        for (int i = 0; i < m_nNodes; ++i)
+        {
+            for (int j = 0; j < m_nNodes; ++j)
+            {
+                m_disSequenceGraph[i][m_disSortedGraph[i][j]] = j;
+            }
+        }
 
-		//PrintDistanceMatrix();
-		//PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
-		//PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes);
+        //PrintDistanceMatrix();
+        //PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
+        //PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes);
     } while (false);
 
     return st;
