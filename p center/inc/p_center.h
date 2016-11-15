@@ -36,10 +36,12 @@ public:
     hoStatus GenerateInitSol();
     hoStatus LocalSearch();
     void PrintResultInfo();
+    void PrintFAndDTable();
 
-    hoStatus AddFacility(int facility);
-    hoStatus RemoveFacility(int facility);
+    hoStatus AddFacility(int facility, double* sc);
+    hoStatus RemoveFacility(int facility, double* sc);
     hoStatus FindPair(int curf, SwapPair* sp);
+    hoStatus FindSec(int* f, double* d);
 
     hoStatus ReadFile(const std::string& file);
 

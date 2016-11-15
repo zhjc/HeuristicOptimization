@@ -107,17 +107,16 @@ hoStatus PCenter::Run()
 hoStatus PCenter::GenerateInitSol()
 {
     hoStatus st = hoOK;
+    double dSc = 0.0;
 
     int firstnode = rand() % m_nNodes;
 
-    m_cursols[firstnode] = FACILITY_NODE;
-    AddFacility(firstnode);
+    AddFacility(firstnode, &dSc);
 
     while (m_nCurFacility < m_nFacility)
     {
         int curfacility = 0;
-        m_cursols[curfacility] = FACILITY_NODE;
-        AddFacility(curfacility);
+        AddFacility(curfacility, &dSc);
     }
 
     return st;
@@ -134,17 +133,105 @@ void PCenter::PrintResultInfo()
     // TODO
 }
 
-hoStatus PCenter::AddFacility(int facility)
+void PCenter::PrintFAndDTable()
+{
+    cout << "F Table:\n";
+
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        cout << i << " " << m_fTable[i].firf << " " << m_fTable[i].secf << "\n";
+    }
+
+    cout << "\nD Table:\n";
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        cout << i << " " << m_dTable[i].fird << " " << m_dTable[i].secd << "\n";
+    }
+
+    cout << endl;
+}
+
+hoStatus PCenter::AddFacility(int facility, double* sc)
 {
     hoStatus st = hoOK;
+
+    double dSc = 0.0;
+
+    m_cursols[facility] = FACILITY_NODE;
     m_nCurFacility++;
+
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        if (m_distanceGraph[facility][i] < m_dTable[i].fird)
+        {
+            m_dTable[i].secd = m_dTable[i].fird;
+            m_fTable[i].secf = m_fTable[i].firf;
+            m_dTable[i].fird = m_distanceGraph[facility][i];
+            m_fTable[i].firf = facility;
+        }
+        else if (m_distanceGraph[facility][i] < m_dTable[i].secd)
+        {
+            m_dTable[i].secd = m_distanceGraph[facility][i];
+            m_fTable[i].secf = facility;
+        }
+
+        if (m_dTable[i].fird > dSc)
+        {
+            dSc = m_dTable[i].fird;
+        }
+    }
+
+    *sc = dSc;
+    
     return st;
 }
 
-hoStatus PCenter::RemoveFacility(int facility)
+hoStatus PCenter::RemoveFacility(int facility, double* sc)
 {
     hoStatus st = hoOK;
+
+    double dSc = 0.0;
+
+    m_cursols[facility] = USER_NODE;
     m_nCurFacility--;
+
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        double dsec = 0.0;
+        int fsec = 0;
+
+        if (m_fTable[i].firf == facility)
+        {
+            m_dTable[i].fird = m_dTable[i].secd;
+            m_fTable[i].firf = m_fTable[i].secf;
+            FindSec(&fsec, &dsec);
+            m_dTable[i].secd = dsec;
+            m_fTable[i].secf = fsec;
+        }
+        else if (m_fTable[i].secf == facility)
+        {
+            FindSec(&fsec, &dsec);
+            m_dTable[i].secd = dsec;
+            m_fTable[i].secf = fsec;
+        }
+
+        if (m_dTable[i].fird > dSc)
+        {
+            dSc = m_dTable[i].fird;
+        }
+    }
+
+    *sc = dSc;
+
+    return st;
+}
+
+hoStatus PCenter::FindSec(int* f, double* d)
+{
+    hoStatus st = hoOK;
+
+    // TODO
+
     return st;
 }
 
@@ -382,14 +469,14 @@ void PCenter::InitData()
 
     for (int i = 0; i < m_nNodes; ++i)
     {
-        m_fTable[i].firf = 0;
-        m_fTable[i].secf = 0;
+        m_fTable[i].firf = INT_MAX;
+        m_fTable[i].secf = INT_MAX;
 
-        m_dTable[i].fird = 0.0;
-        m_dTable[i].secd = 0.0;
+        m_dTable[i].fird = DBL_MAX;
+        m_dTable[i].secd = DBL_MAX;
 
-        m_bestsols[0] = 0;
-        m_cursols[0] = 0;
+        m_bestsols[i] = 0;
+        m_cursols[i] = 0;
     }
 }
 
