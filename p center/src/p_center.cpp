@@ -466,10 +466,10 @@ void PCenter::QuickSort(int a[], int curr, int l, int r)
 
         while (m_distanceGraph[curr][t] < m_distanceGraph[curr][a[--j]])
         {
-			if (j == l)
-			{
-				break;
-			}
+            if (j == l)
+            {
+                break;
+            }
         }
 
         if (i >= j)
