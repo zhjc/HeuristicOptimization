@@ -41,7 +41,7 @@ public:
     hoStatus AddFacility(int facility, double* sc);
     hoStatus RemoveFacility(int facility, double* sc);
     hoStatus FindPair(int curf, SwapPair* sp);
-    hoStatus FindSec(int* f, double* d);
+    hoStatus FindSec(int curnode, int* f, double* d);
 
     hoStatus ReadFile(const std::string& file);
 

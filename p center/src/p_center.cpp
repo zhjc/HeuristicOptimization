@@ -6,8 +6,12 @@
 #include <cassert>
 #include <climits>
 #include <ctime>
+#include <vector>
+
+#include "common/utility.h"
 
 using namespace std;
+using namespace utility;
 
 #define FACILITY_NODE 1
 #define USER_NODE 0
@@ -111,12 +115,55 @@ hoStatus PCenter::GenerateInitSol()
 
     int firstnode = rand() % m_nNodes;
 
+    LogInfo("Begin generate initial solution!");
+
     AddFacility(firstnode, &dSc);
+    LogInfo("The first facility " + ToStr(firstnode));
 
     while (m_nCurFacility < m_nFacility)
     {
-        int curfacility = 0;
-        AddFacility(curfacility, &dSc);
+        double dmax = 0.0;
+        vector<int> vecmaxdis;
+
+        for (int i = 0; i < m_nNodes; ++i)
+        {
+            if (m_cursols[i] != FACILITY_NODE)
+            {
+                if (m_dTable[i].fird > dmax)
+                {
+                    dmax = m_dTable[i].fird;
+
+                    vecmaxdis.clear();
+                    vecmaxdis.push_back(i);
+                }
+                else if (m_dTable[i].fird == dmax)
+                {
+                    vecmaxdis.push_back(i);
+                }
+            }
+        }
+
+        int nusercenter = 0;
+        size_t ns = vecmaxdis.size();
+        if (ns==1)
+        {
+            nusercenter = vecmaxdis[0];
+        }
+        else if (ns > 1)
+        {
+            nusercenter = vecmaxdis[rand() % vecmaxdis.size()];
+        }
+        else
+        {
+            st = hoError;
+        }
+
+        LogInfo("selected node of longest edge is " + ToStr(nusercenter));
+
+        int nfacility = 0;
+        
+        AddFacility(nfacility, &dSc);
+        LogInfo("selected facility is " + ToStr(nfacility));
     }
 
     return st;
@@ -125,6 +172,9 @@ hoStatus PCenter::GenerateInitSol()
 hoStatus PCenter::LocalSearch()
 {
     hoStatus st = hoOK;
+
+
+
     return st;
 }
 
@@ -204,13 +254,13 @@ hoStatus PCenter::RemoveFacility(int facility, double* sc)
         {
             m_dTable[i].fird = m_dTable[i].secd;
             m_fTable[i].firf = m_fTable[i].secf;
-            FindSec(&fsec, &dsec);
+            FindSec(i, &fsec, &dsec);
             m_dTable[i].secd = dsec;
             m_fTable[i].secf = fsec;
         }
         else if (m_fTable[i].secf == facility)
         {
-            FindSec(&fsec, &dsec);
+            FindSec(i, &fsec, &dsec);
             m_dTable[i].secd = dsec;
             m_fTable[i].secf = fsec;
         }
@@ -226,11 +276,25 @@ hoStatus PCenter::RemoveFacility(int facility, double* sc)
     return st;
 }
 
-hoStatus PCenter::FindSec(int* f, double* d)
+// find second facility and distance
+hoStatus PCenter::FindSec(int curnode, int* f, double* d)
 {
     hoStatus st = hoOK;
 
-    // TODO
+    *f = INT_MAX;
+    *d = DBL_MAX;
+
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        if (i!=curnode && m_cursols[i]==FACILITY_NODE && i!=m_fTable[i].firf)
+        {
+            if (m_distanceGraph[curnode][i] < *d)
+            {
+                *d = m_distanceGraph[curnode][i];
+                *f = i;
+            }
+        }
+    }
 
     return st;
 }
@@ -238,6 +302,9 @@ hoStatus PCenter::FindSec(int* f, double* d)
 hoStatus PCenter::FindPair(int curf, SwapPair* sp)
 {
     hoStatus st = hoOK;
+
+    double dC = 0.0;
+
     return st;
 }
 
