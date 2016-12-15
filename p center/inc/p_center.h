@@ -35,15 +35,16 @@ public:
 
     hoStatus GenerateInitSol();
     hoStatus LocalSearch();
-    void PrintResultInfo();
-    void PrintFAndDTable();
-
+    
     hoStatus AddFacility(int facility, double* sc);
     hoStatus RemoveFacility(int facility, double* sc);
     hoStatus FindPair(int curf, SwapPair* sp);
     hoStatus FindSec(int curnode, int* f, double* d);
 
     hoStatus ReadFile(const std::string& file);
+
+    void PrintResultInfo();
+    void PrintFAndDTable();
 
 private:
     hoStatus AllocMemory();
@@ -72,6 +73,8 @@ private:
     double ** m_distanceGraph;
     int ** m_disSortedGraph;
     int ** m_disSequenceGraph;
+
+    int** m_TabuList;
 
     int m_Sc;
 };

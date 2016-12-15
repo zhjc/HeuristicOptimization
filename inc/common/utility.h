@@ -16,10 +16,14 @@ std::string ToStr(T n)
     return stream.str();
 }
 
+#ifdef PRINT_LOG
 void LogInfo(const std::string& str)
 {
     std::cout << str << std::endl;
 }
+#else
+#define LogInfo(n)  
+#endif
 
 HO_NAMESPACE_END
 

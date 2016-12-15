@@ -70,6 +70,7 @@ PCenter::PCenter()
 , m_distanceGraph(hoNull)
 , m_disSortedGraph(hoNull)
 , m_disSequenceGraph(hoNull)
+, m_TabuList(hoNull)
 , m_dTable(hoNull)
 , m_fTable(hoNull)
 , m_bestsols(hoNull)
@@ -122,45 +123,41 @@ hoStatus PCenter::GenerateInitSol()
 
     while (m_nCurFacility < m_nFacility)
     {
-        double dmax = 0.0;
+        double dmaxdis = 0.0;
         vector<int> vecmaxdis;
 
         for (int i = 0; i < m_nNodes; ++i)
         {
             if (m_cursols[i] != FACILITY_NODE)
             {
-                if (m_dTable[i].fird > dmax)
+                if (dmaxdis < m_dTable[i].fird)
                 {
-                    dmax = m_dTable[i].fird;
-
+                    dmaxdis = m_dTable[i].fird;
                     vecmaxdis.clear();
                     vecmaxdis.push_back(i);
                 }
-                else if (m_dTable[i].fird == dmax)
+                else if (dmaxdis == m_dTable[i].fird)
                 {
                     vecmaxdis.push_back(i);
                 }
             }
         }
 
-        int nusercenter = 0;
-        size_t ns = vecmaxdis.size();
-        if (ns==1)
-        {
-            nusercenter = vecmaxdis[0];
-        }
-        else if (ns > 1)
-        {
-            nusercenter = vecmaxdis[rand() % vecmaxdis.size()];
-        }
-        else
-        {
-            st = hoError;
-        }
+        assert(vecmaxdis.size() > 0);
+
+        int nusercenter = vecmaxdis[rand() % vecmaxdis.size()];
 
         LogInfo("selected node of longest edge is " + ToStr(nusercenter));
 
         int nfacility = 0;
+        for (int i = 0; i < m_nNodes; ++i)
+        {
+            if (m_disSortedGraph[nusercenter][i] == m_fTable[nusercenter].firf)
+            {
+                nfacility = rand() % i;
+                break;
+            }
+        }
         
         AddFacility(nfacility, &dSc);
         LogInfo("selected facility is " + ToStr(nfacility));
@@ -173,39 +170,84 @@ hoStatus PCenter::LocalSearch()
 {
     hoStatus st = hoOK;
 
+    LogInfo("Begin local search:");
 
+    int nmaxiter = 5000;
+    int iter = 0;
+    SwapPair sp;
 
+    m_TabuList = new int*[m_nNodes];
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        m_TabuList[i] = new int[m_nNodes];
+        for (int j = 0; j < m_nNodes; ++j)
+        {
+            m_TabuList[i][j] = 0;
+        }
+    }
+
+    while (iter < nmaxiter)
+    {
+        double dMaxDistance = 0.0;
+        vector<int> vecMaxDistanceNode;
+        for (int i = 0; i < m_nNodes; ++i)
+        {
+            if (dMaxDistance < m_dTable[i].fird)
+            {
+                dMaxDistance = m_dTable[i].fird;
+                vecMaxDistanceNode.clear();
+                vecMaxDistanceNode.push_back(i);
+            }
+            else if (dMaxDistance == m_dTable[i].fird)
+            {
+                vecMaxDistanceNode.push_back(i);
+            }
+        }
+
+        assert(vecMaxDistanceNode.size()>0);
+
+        int nSelect = vecMaxDistanceNode[rand() % vecMaxDistanceNode.size()];
+
+        LogInfo("selected node " + ToStr(nSelect) + " for swap");
+
+        // try nodes in circle (nSelect, dMaxDistance), choose the best one
+        FindPair(nSelect, &sp);
+
+        // do swap operation and set TabuList
+        double dSc = 0.0;
+        AddFacility(sp.vertex, &dSc);
+        RemoveFacility(sp.facility, &dSc);
+        m_TabuList[sp.facility][sp.vertex] = iter + rand() % 10 + m_nNodes / 2;
+
+        // update best solution
+        if (m_curobjval < m_bestobjval)
+        {
+            m_bestobjval = m_curobjval;
+            for (int i = 0; i < m_nNodes; ++i)
+            {
+                m_bestsols[i] = m_cursols[i];
+            }
+        }
+    }
+
+    LogInfo("finish local search");
+
+    PrintResultInfo();
+    
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        delete[] m_TabuList[i];
+    }
+    delete[] m_TabuList;
+    
     return st;
-}
-
-void PCenter::PrintResultInfo()
-{
-    // TODO
-}
-
-void PCenter::PrintFAndDTable()
-{
-    cout << "F Table:\n";
-
-    for (int i = 0; i < m_nNodes; ++i)
-    {
-        cout << i << " " << m_fTable[i].firf << " " << m_fTable[i].secf << "\n";
-    }
-
-    cout << "\nD Table:\n";
-    for (int i = 0; i < m_nNodes; ++i)
-    {
-        cout << i << " " << m_dTable[i].fird << " " << m_dTable[i].secd << "\n";
-    }
-
-    cout << endl;
 }
 
 hoStatus PCenter::AddFacility(int facility, double* sc)
 {
     hoStatus st = hoOK;
 
-    double dSc = 0.0;
+    double dSc = 0.0; // p+1个结点时的最大边Sc
 
     m_cursols[facility] = FACILITY_NODE;
     m_nCurFacility++;
@@ -222,7 +264,7 @@ hoStatus PCenter::AddFacility(int facility, double* sc)
         else if (m_distanceGraph[facility][i] < m_dTable[i].secd)
         {
             m_dTable[i].secd = m_distanceGraph[facility][i];
-            m_fTable[i].secf = facility;
+            m_fTable[i].secf = facility;    
         }
 
         if (m_dTable[i].fird > dSc)
@@ -240,7 +282,7 @@ hoStatus PCenter::RemoveFacility(int facility, double* sc)
 {
     hoStatus st = hoOK;
 
-    double dSc = 0.0;
+    double dSc = 0.0; // 删除一个结点后变成p个结点时最大边，也即Mf
 
     m_cursols[facility] = USER_NODE;
     m_nCurFacility--;
@@ -304,6 +346,10 @@ hoStatus PCenter::FindPair(int curf, SwapPair* sp)
     hoStatus st = hoOK;
 
     double dC = 0.0;
+
+    
+
+
 
     return st;
 }
@@ -432,6 +478,33 @@ hoStatus PCenter::ReadFile(const string& file)
     } while (false);
 
     return st;
+}
+
+void PCenter::PrintResultInfo()
+{
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        cout << m_cursols[i] << " ";
+    }
+    cout << endl;
+}
+
+void PCenter::PrintFAndDTable()
+{
+    cout << "F Table:\n";
+
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        cout << i << " " << m_fTable[i].firf << " " << m_fTable[i].secf << "\n";
+    }
+
+    cout << "\nD Table:\n";
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        cout << i << " " << m_dTable[i].fird << " " << m_dTable[i].secd << "\n";
+    }
+
+    cout << endl;
 }
 
 hoStatus PCenter::AllocMemory()
