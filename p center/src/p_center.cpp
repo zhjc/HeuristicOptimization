@@ -347,7 +347,9 @@ hoStatus PCenter::FindPair(int curf, SwapPair* sp)
 
     double dC = 0.0;
 
-    
+    // 需要计算m_curobjval, m_cursols
+    // 判断是否在禁忌之中
+
 
 
 
