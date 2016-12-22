@@ -4,8 +4,11 @@
 
 #include "config.h"
 #include <string>
+#include <vector>
 
 HO_NAMESPACE_BEGIN(pcenter)
+
+#define PRINT_LOG
 
 struct FTable
 {
@@ -38,12 +41,12 @@ public:
     
     hoStatus AddFacility(int facility, double* sc);
     hoStatus RemoveFacility(int facility, double* sc);
-    hoStatus FindPair(int curf, SwapPair* sp);
+    hoStatus FindPair(int curf, double d, std::vector<SwapPair>* vecsp, long iter);
     hoStatus FindSec(int curnode, int* f, double* d);
 
     hoStatus ReadFile(const std::string& file);
 
-    void PrintResultInfo();
+    void PrintResultInfo(bool onlyfacility=true);
     void PrintFAndDTable();
 
 private:
@@ -78,6 +81,8 @@ private:
     int ** m_disSequenceGraph;
 
     int** m_TabuList;
+
+    double* m_f;
 
     int m_Sc;
 };

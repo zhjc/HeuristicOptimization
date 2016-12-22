@@ -16,15 +16,28 @@ int main(int argc, char* argv[])
 {
     string strfilename = argv[1];
 
-    pcenter::PCenter* pc = new pcenter::PCenter();
+    int ret = 0;
 
-    pc->ReadFile(strfilename);
+    do 
+    {
+        pcenter::PCenter* pc = new pcenter::PCenter();
+        hoStatus st = hoOK;
+        st = pc->ReadFile(strfilename);
+        if (st != hoOK)
+        {
+            ret = -1;
+            break;
+        }
 
-    //qsort(values, 6, sizeof(int), compare);
-    //for (int n = 0; n < 6; n++)
-    //    printf("%d ", values[n]);
+        st = pc->Run();
+        if (st != hoOK)
+        {
+            ret = -1;
+            break;
+        }
 
-    delete pc;
+        delete pc;
+    } while (false);
 
-	return 0;
+	return ret;
 }
