@@ -70,10 +70,10 @@ private:
     int m_nCurFacility;
     int m_nEdges;
 
-    int m_bestobjval;
+    double m_bestobjval;
     int* m_bestsols;
 
-    int m_curobjval;
+    double m_curobjval;
     int* m_cursols;
     
     double ** m_distanceGraph;

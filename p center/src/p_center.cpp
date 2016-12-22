@@ -46,18 +46,37 @@ void PrintOneColumn(T a[], int size)
 }
 
 template<class T>
-void PrintMatrix(T** a, int nr, int nc)
+void PrintMatrix(T** a, int nr, int nc, bool tofile = false)
 {
-    cout << "matrix:\n";
-    for (int i = 0; i < nr; ++i)
+    if (tofile)
     {
-        for (int j = 0; j < nc; ++j)
+        ofstream ofile("D:/TEMP/11.txt", ios::app);
+        ofile << "matrix:\n";
+        for (int i = 0; i < nr; ++i)
         {
-            cout << a[i][j] << " ";
+            for (int j = 0; j < nc; ++j)
+            {
+                ofile << a[i][j] << " ";
+            }
+            ofile << endl;
+        }
+        ofile << endl;
+
+        ofile.close();
+    }
+    else
+    {
+        cout << "matrix:\n";
+        for (int i = 0; i < nr; ++i)
+        {
+            for (int j = 0; j < nc; ++j)
+            {
+                cout << a[i][j] << " ";
+            }
+            cout << endl;
         }
         cout << endl;
     }
-    cout << endl;
 }
 
 PCenter::PCenter()
@@ -66,7 +85,7 @@ PCenter::PCenter()
 , m_nNodes(0)
 , m_nEdges(0)
 , m_curobjval(0)
-, m_bestobjval(0)
+, m_bestobjval(DBL_MAX)
 , m_distanceGraph(hoNull)
 , m_disSortedGraph(hoNull)
 , m_disSequenceGraph(hoNull)
@@ -121,14 +140,13 @@ hoStatus PCenter::GenerateInitSol()
     LogInfo("Begin generate initial solution!");
 
     AddFacility(firstnode, &dSc);
+    //PrintFAndDTable();
     LogInfo("The first facility " + ToStr(firstnode));
 
     while (m_nCurFacility < m_nFacility)
     {
         double dmaxdis = 0.0;
         vector<int> vecmaxdis;
-
-        PrintFAndDTable();
 
         for (int i = 0; i < m_nNodes; ++i)
         {
@@ -163,7 +181,7 @@ hoStatus PCenter::GenerateInitSol()
             }
             else
             {
-                if (m_cursols[i] == FACILITY_NODE)
+                if (m_cursols[m_disSortedGraph[nusercenter][i]] == FACILITY_NODE)
                 {
                     continue;
                 }
@@ -177,7 +195,10 @@ hoStatus PCenter::GenerateInitSol()
         
         AddFacility(nfacility, &dSc);
         LogInfo("selected facility is " + ToStr(nfacility));
+        //PrintFAndDTable();
     }
+
+    PrintResultInfo();
 
     return st;
 }
@@ -188,7 +209,7 @@ hoStatus PCenter::LocalSearch()
 
     LogInfo("Begin local search:");
 
-    long nmaxiter = 5000;
+    long nmaxiter = 500;
     long iter = 0;
     SwapPair sp;
 
@@ -230,23 +251,37 @@ hoStatus PCenter::LocalSearch()
         vector<SwapPair> vecsps;
         FindPair(nSelect, dMaxDistance, &vecsps, iter);
 
+        if (vecsps.empty())
+        {
+            iter++;
+            continue;
+        }
+
         assert(vecsps.size() > 0);
         sp = vecsps[rand()%vecsps.size()];
 
-        if (sp.facility == sp.vertex)
+        if (false && sp.facility == sp.vertex)
         {
             LogInfo("selected node " + ToStr(sp.facility) + " for swap " + ToStr(sp.vertex));
             LogInfo("stop procedure!");
             break;
         }
 
-        LogInfo("selected node " + ToStr(sp.facility) + " for swap " + ToStr(sp.vertex));
+        LogInfo("selected node " + ToStr(sp.vertex) + " for swap " + ToStr(sp.facility));
 
         // do swap operation and set TabuList
         double dSc = 0.0;
         AddFacility(sp.vertex, &dSc);
         RemoveFacility(sp.facility, &dSc);
         m_TabuList[sp.facility][sp.vertex] = iter + rand() % 10 + m_nNodes / 10;
+
+        for (int i = 0; i < m_nNodes; ++i)
+        {
+            if (m_dTable[i].fird > m_curobjval)
+            {
+                m_curobjval = m_dTable[i].fird;
+            }
+        }
 
         // update best solution
         if (m_curobjval < m_bestobjval)
@@ -257,11 +292,13 @@ hoStatus PCenter::LocalSearch()
                 m_bestsols[i] = m_cursols[i];
             }
         }
+
+        iter++;
     }
 
     LogInfo("finish local search");
 
-    PrintResultInfo(false);
+    //PrintResultInfo();
     
     for (int i = 0; i < m_nNodes; ++i)
     {
@@ -414,13 +451,25 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
         }
         else
         {
+            if (m_cursols[m_disSortedGraph[selectnode][i]] == FACILITY_NODE)
+            {
+                continue;
+            }
+
             vecAddSets.push_back(m_disSortedGraph[selectnode][i]); // ??是否包含中心设施
         }
     }
 
     // 存储现场
-    memcpy(m_fTable_copy, m_fTable, sizeof(FTable)*m_nNodes);
-    memcpy(m_dTable_copy, m_dTable, sizeof(DTable)*m_nNodes);
+    //memcpy(m_fTable_copy, m_fTable, sizeof(FTable)*m_nNodes);
+    //memcpy(m_dTable_copy, m_dTable, sizeof(DTable)*m_nNodes);
+    for (int j = 0; j < m_nNodes; ++j)
+    {
+        m_fTable_copy[j].firf = m_fTable[j].firf;
+        m_fTable_copy[j].secf = m_fTable[j].secf;
+        m_dTable_copy[j].fird = m_dTable[j].fird;
+        m_dTable_copy[j].secd = m_dTable[j].secd;
+    }
 
     size_t naddset = vecAddSets.size();
     for (size_t k = 0; k < naddset; ++k)
@@ -429,10 +478,11 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
 
         for (int i = 0; i < m_nNodes; ++i)
         {
-            if (m_cursols[i] == FACILITY_NODE)
+            m_f[i] = 0;
+            /*if (m_cursols[i] == FACILITY_NODE)
             {
                 m_f[i] = 0;
-            }
+            }*/
         }
 
         for (int i = 0; i < m_nNodes; ++i)
@@ -455,6 +505,11 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
         SwapPair sp;
         for (int i = 0; i < m_nNodes; ++i)
         {
+            if (i == vecAddSets[k])
+            {
+                continue;
+            }
+
             if (m_cursols[i] == FACILITY_NODE)
             {
                 if (m_f[i] == dmax)
@@ -477,8 +532,15 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
         RemoveFacility(vecAddSets[k], &dC);
 
         // 恢复现场
-        memcpy(m_fTable, m_fTable_copy, sizeof(FTable)*m_nNodes);
-        memcpy(m_dTable, m_dTable_copy, sizeof(DTable)*m_nNodes);
+        //memcpy(m_fTable, m_fTable_copy, sizeof(FTable)*m_nNodes);
+        //memcpy(m_dTable, m_dTable_copy, sizeof(DTable)*m_nNodes);
+        for (int j = 0; j < m_nNodes; ++j)
+        {
+            m_fTable[j].firf = m_fTable_copy[j].firf;
+            m_fTable[j].secf = m_fTable_copy[j].secf;
+            m_dTable[j].fird = m_dTable_copy[j].fird;
+            m_dTable[j].secd = m_dTable_copy[j].secd;
+        }
     }
 
     return st;
@@ -599,12 +661,17 @@ hoStatus PCenter::ReadFile(const string& file)
             }
         }
 
-        cout << "distance matrix:" << endl;
+        /*cout << "distance matrix:" << endl;
         PrintDistanceMatrix();
         cout << "sorted distance matrix:" << endl;
         PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
         cout << "number distance matrix:" << endl;
         PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes);
+
+        PrintMatrix(m_distanceGraph, m_nNodes, m_nNodes, true);
+        PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes, true);
+        PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes, true);*/
+        //PrintMatrix(m_distanceGraph, m_nNodes, m_nNodes, true);
     } while (false);
 
     return st;
@@ -612,18 +679,19 @@ hoStatus PCenter::ReadFile(const string& file)
 
 void PCenter::PrintResultInfo(bool onlyfacilit)
 {
+    cout << "best values: " << ToStr(m_bestobjval) << endl;
     for (int i = 0; i < m_nNodes; ++i)
     {
         if (onlyfacilit)
         {
             if (m_cursols[i] == FACILITY_NODE)
             {
-                cout << i << " ";
+                cout << i+1 << " ";
             }
         }
         else 
         {
-            cout << i<< "-" << m_cursols[i] << " ";
+            cout << i+1 << "-" << m_bestsols[i] << " ";
         }
     }
     cout << endl;
