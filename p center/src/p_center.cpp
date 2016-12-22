@@ -73,6 +73,8 @@ PCenter::PCenter()
 , m_TabuList(hoNull)
 , m_dTable(hoNull)
 , m_fTable(hoNull)
+, m_fTable_copy(hoNull)
+, m_dTable_copy(hoNull)
 , m_bestsols(hoNull)
 , m_cursols(hoNull)
 , m_Sc(0)
@@ -350,8 +352,44 @@ hoStatus PCenter::FindPair(int curf, SwapPair* sp)
     // 需要计算m_curobjval, m_cursols
     // 判断是否在禁忌之中
 
+    vector<int> vecMaxDis;
 
+    // 找到最长边dij
+    double dmax = -1.0;
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        if (m_dTable[i].fird > dmax)
+        {
+            dmax = m_dTable[i].fird;
+            vecMaxDis.resize(0);
+            vecMaxDis.push_back(i); // push的node必为用户节点
+        }
+        else if (m_dTable[i].fird == dmax)
+        {
+            vecMaxDis.push_back(i);
+        }
+    }
 
+    assert(vecMaxDis.size() > 0);
+    int selectnode = vecMaxDis[rand()%vecMaxDis.size()];
+
+    int serverofselectnode = m_fTable[selectnode].firf;
+
+    // 找到selectnode为圆心，其到服务点的距离为半径的圆内的点，随机选择一个作为将要添加的结点，即选择Nwk
+    vector<int> vecAddSets;
+    for (int i = 0; i < m_nNodes;++i)
+    {
+        if (m_disSequenceGraph[selectnode][i] == 0)
+        {
+            continue;
+        }
+    }
+
+    size_t naddset = vecAddSets.size();
+    for (size_t i = 0; i < naddset; ++i)
+    {
+
+    }
 
     return st;
 }
@@ -471,12 +509,12 @@ hoStatus PCenter::ReadFile(const string& file)
             }
         }
 
-        //cout << "distance matrix:" << endl;
-        //PrintDistanceMatrix();
-        //cout << "sorted distance matrix:" << endl;
-        //PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
-        //cout << "number distance matrix:" << endl;
-        //PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes);
+        cout << "distance matrix:" << endl;
+        PrintDistanceMatrix();
+        cout << "sorted distance matrix:" << endl;
+        PrintMatrix(m_disSortedGraph, m_nNodes, m_nNodes);
+        cout << "number distance matrix:" << endl;
+        PrintMatrix(m_disSequenceGraph, m_nNodes, m_nNodes);
     } while (false);
 
     return st;

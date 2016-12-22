@@ -59,6 +59,9 @@ private:
     FTable* m_fTable;
     DTable* m_dTable;
 
+    FTable* m_fTable_copy;
+    DTable* m_dTable_copy;
+
     int m_nNodes;
     int m_nFacility;
     int m_nCurFacility;
