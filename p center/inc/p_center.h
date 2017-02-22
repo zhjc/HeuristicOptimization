@@ -58,6 +58,8 @@ private:
     void GetShortPathByPloyd();
     void QuickSort(int a[], int curr, int l, int r);
 
+    hoStatus AddFacilityInternal();
+
 private:
     FTable* m_fTable;
     DTable* m_dTable;
@@ -84,7 +86,7 @@ private:
 
     double* m_f;
 
-    int m_Sc;
+    double m_Sc;
 };
 
 HO_NAMESPACE_END

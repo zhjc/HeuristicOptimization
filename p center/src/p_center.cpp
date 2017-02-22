@@ -96,7 +96,7 @@ PCenter::PCenter()
 , m_dTable_copy(hoNull)
 , m_bestsols(hoNull)
 , m_cursols(hoNull)
-, m_Sc(0)
+, m_Sc(0.0)
 {
     // nothing to do
 }
@@ -130,18 +130,9 @@ hoStatus PCenter::Run()
     return st;
 }
 
-hoStatus PCenter::GenerateInitSol()
+hoStatus PCenter::AddFacilityInternal()
 {
-    hoStatus st = hoOK;
-    double dSc = 0.0;
-
-    int firstnode = rand() % m_nNodes;
-
-    LogInfo("Begin generate initial solution!");
-
-    AddFacility(firstnode, &dSc);
-    //PrintFAndDTable();
-    LogInfo("The first facility " + ToStr(firstnode));
+    double dSc = 0.0;  // 文献中Sc表示最大的服务边
 
     while (m_nCurFacility < m_nFacility)
     {
@@ -192,11 +183,29 @@ hoStatus PCenter::GenerateInitSol()
 
         assert(vecnewuser.size() > 0);
         nfacility = vecnewuser[rand() % vecnewuser.size()];
-        
+
         AddFacility(nfacility, &dSc);
         LogInfo("selected facility is " + ToStr(nfacility));
         //PrintFAndDTable();
     }
+
+    return hoOK;
+}
+
+hoStatus PCenter::GenerateInitSol()
+{
+    hoStatus st = hoOK;
+    double dSc = 0.0;
+
+    int firstnode = rand() % m_nNodes;
+
+    LogInfo("Begin generate initial solution!");
+
+    AddFacility(firstnode, &dSc);
+    //PrintFAndDTable();
+    LogInfo("The first facility " + ToStr(firstnode));
+
+    st = AddFacilityInternal();
 
     PrintResultInfo();
 
@@ -206,6 +215,8 @@ hoStatus PCenter::GenerateInitSol()
 hoStatus PCenter::LocalSearch()
 {
     hoStatus st = hoOK;
+
+    st = AddFacilityInternal(); // make sure has p facilities
 
     LogInfo("Begin local search:");
 
@@ -348,7 +359,7 @@ hoStatus PCenter::RemoveFacility(int facility, double* sc)
 {
     hoStatus st = hoOK;
 
-    double dSc = 0.0; // 删除一个结点后变成p个结点时最大边，也即Mf
+    double dSc = 0.0; // 删除一个结点后变成p个结点时最大边，也即Mf   // 文献中Sc表示最大的服务边
 
     m_cursols[facility] = USER_NODE;
     m_nCurFacility--;
@@ -384,7 +395,7 @@ hoStatus PCenter::RemoveFacility(int facility, double* sc)
     return st;
 }
 
-// find second facility and distance
+// find second facility and distance（扫描当前解搜寻次近邻的服务点）
 hoStatus PCenter::FindSec(int curnode, int* f, double* d)
 {
     hoStatus st = hoOK;
@@ -542,6 +553,8 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
             m_dTable[j].secd = m_dTable_copy[j].secd;
         }
     }
+
+    m_Sc = dC; // 最大的服务边
 
     return st;
 }
