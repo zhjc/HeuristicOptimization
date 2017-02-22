@@ -18,6 +18,10 @@ int main(int argc, char* argv[])
 
     int ret = 0;
 
+    // 区分运行的算法类型（基于单个或是种群算法）
+    // 种群中算法类别
+    int run_type = 0;
+
     do 
     {
         pcenter::PCenter* pc = new pcenter::PCenter();
@@ -29,7 +33,7 @@ int main(int argc, char* argv[])
             break;
         }
 
-        st = pc->Run();
+        st = pc->RunSinglePhase(run_type);
         if (st != hoOK)
         {
             ret = -1;

@@ -13,9 +13,11 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\src\common\utility.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
+    <ClCompile Include="..\..\src\population.cpp" />
     <ClCompile Include="..\..\src\p_center.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\inc\population.h" />
     <ClInclude Include="..\..\inc\p_center.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

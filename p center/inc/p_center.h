@@ -34,7 +34,14 @@ public:
     PCenter();
     ~PCenter();
 
-    hoStatus Run();
+    hoStatus RunSinglePhase(int run_type);
+    hoStatus RunPopulationPhase(int run_type);
+
+    hoStatus GeneticAlgorithm();
+    hoStatus Mutation1(int* sols);
+    hoStatus Mutation2(int* sols);
+    hoStatus Crossover1(int* sols1, int* sols2);
+    hoStatus Crossover2(int* sols1, int* sols2);
 
     hoStatus GenerateInitSol();
     hoStatus LocalSearch();

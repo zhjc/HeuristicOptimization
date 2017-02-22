@@ -10,6 +10,8 @@
 
 #include "common/utility.h"
 
+#include "population.h"
+
 using namespace std;
 using namespace utility;
 
@@ -101,7 +103,7 @@ PCenter::PCenter()
     // nothing to do
 }
 
-hoStatus PCenter::Run()
+hoStatus PCenter::RunSinglePhase(int run_type)
 {
     hoStatus st = hoOK;
 
@@ -128,6 +130,25 @@ hoStatus PCenter::Run()
     } while (false);
 
     return st;
+}
+
+hoStatus PCenter::RunPopulationPhase(int run_type)
+{
+    vector<Population*> vecpops;
+
+    int iter = 0;
+
+    while (iter < 50)
+    {
+        for (int i = 0; i < vecpops.size(); ++i)
+        {
+            Population* pops = vecpops[i];
+
+        }
+
+    }
+
+    return hoOK;
 }
 
 hoStatus PCenter::AddFacilityInternal()
@@ -188,6 +209,53 @@ hoStatus PCenter::AddFacilityInternal()
         LogInfo("selected facility is " + ToStr(nfacility));
         //PrintFAndDTable();
     }
+
+    return hoOK;
+}
+
+hoStatus PCenter::GeneticAlgorithm()
+{
+    return hoOK;
+}
+
+hoStatus PCenter::Mutation1(int* sols)
+{
+    // 在[p/2,p]中随机选取一个数q,在Pi的设施中随机选取q个设施，
+    // 再在V-Pi集合中选取p-q个用户节点，构成新的解S
+    int q = rand() * (m_nFacility - m_nFacility / 2) + m_nFacility / 2;
+
+    return hoOK;
+}
+
+hoStatus PCenter::Mutation2(int* sols)
+{
+    // 基于设施Facility不能太接近的原则
+    // 对于当前解，找出最近的一对设施点，并将这对设施点删除
+    // 再调用LocalSearch程序来添加设施点
+
+    return hoOK;
+}
+
+hoStatus PCenter::Crossover1(int* sols1, int* sols2)
+{
+    // 随机从两个父解中选取p个设施，构造新解
+
+    return hoOK;
+}
+
+hoStatus PCenter::Crossover2(int* sols1, int* sols2)
+{
+    // 首先随机选取两个用户节点，随机选取一个[0.1,0.9]之间的数字q，di1作为设施i到第一个用户的距离，
+    // di2作为设施i到第二个用户的距离
+
+    // 第一个子解由两部分组成:第一个父解中选择所有di1/di2<=q的所有设施i,以及第二个父解中所有dj1/dj2>q的所有设施j
+    // 第二个子解由两部分组成:第一个父解中选择所有di1/di2>q的所有设施i,以及第二个父解中所有dj1/dj2<=q的所有设施j
+
+    // 如果子解中的设施数超过p,则随机删除以降到p;如果设施数不足p,则由LocalSearch程序补充
+
+    double q = rand() * 0.8 + 0.1;
+
+
 
     return hoOK;
 }
@@ -284,6 +352,8 @@ hoStatus PCenter::LocalSearch()
         double dSc = 0.0;
         AddFacility(sp.vertex, &dSc);
         RemoveFacility(sp.facility, &dSc);
+
+        // 设置禁忌
         m_TabuList[sp.facility][sp.vertex] = iter + rand() % 10 + m_nNodes / 10;
 
         for (int i = 0; i < m_nNodes; ++i)
@@ -425,7 +495,8 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
     double dC = 0.0;
 
     // 需要计算m_curobjval, m_cursols
-    // 判断是否在禁忌之中
+
+    // NOTE: 判断是否在禁忌之中
 
     /*vector<int> vecMaxDis;
     // 找到最长边dij
