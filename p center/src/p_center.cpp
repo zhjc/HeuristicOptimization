@@ -140,12 +140,12 @@ hoStatus PCenter::RunPopulationPhase(int run_type)
 
     while (iter < 50)
     {
-        for (int i = 0; i < vecpops.size(); ++i)
+        for (size_t i = 0; i < vecpops.size(); ++i)
         {
             Population* pops = vecpops[i];
 
+            // TODO
         }
-
     }
 
     return hoOK;
@@ -288,7 +288,7 @@ hoStatus PCenter::LocalSearch()
 
     LogInfo("Begin local search:");
 
-    long nmaxiter = 500;
+    long nmaxiter = 5000;
     long iter = 0;
     SwapPair sp;
 
@@ -346,6 +346,7 @@ hoStatus PCenter::LocalSearch()
             break;
         }
 
+        LogInfo("current iter:" + ToStr(iter));
         LogInfo("selected node " + ToStr(sp.vertex) + " for swap " + ToStr(sp.facility));
 
         // do swap operation and set TabuList
@@ -353,7 +354,7 @@ hoStatus PCenter::LocalSearch()
         AddFacility(sp.vertex, &dSc);
         RemoveFacility(sp.facility, &dSc);
 
-        // 设置禁忌
+        // 设置禁忌, 此处行为用户节点, 列为设施节点
         m_TabuList[sp.facility][sp.vertex] = iter + rand() % 10 + m_nNodes / 10;
 
         for (int i = 0; i < m_nNodes; ++i)
@@ -542,6 +543,11 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
         }
     }
 
+    vector<SwapPair> vecChoose;
+    vector<SwapPair> vecChooseTabu;
+    bool bChoose = false;
+    bool bChooseTabu = false;
+
     // 存储现场
     //memcpy(m_fTable_copy, m_fTable, sizeof(FTable)*m_nNodes);
     //memcpy(m_dTable_copy, m_dTable, sizeof(DTable)*m_nNodes);
@@ -594,7 +600,49 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
 
             if (m_cursols[i] == FACILITY_NODE)
             {
-                if (m_f[i] == dmax)
+                ////
+                if (m_f[i] <= dmax)
+                {
+                    if (isTabu(vecAddSets[k], i, iter))
+                    {
+                        bChooseTabu = true;
+                        if (m_f[i] == dmax)
+                        {
+                            sp.facility = i;
+                            sp.vertex = vecAddSets[k];
+                            vecChooseTabu.push_back(sp);
+                        }
+                        else if (m_f[i] < dmax)
+                        {
+                            vecChooseTabu.resize(0);
+                            sp.facility = i;
+                            sp.vertex = vecAddSets[k];
+                            vecChooseTabu.push_back(sp);
+                            dmax = m_f[i];
+                        }
+                    }
+                    else
+                    {
+                        bChoose = true;
+                        if (m_f[i] == dmax)
+                        {
+                            sp.facility = i;
+                            sp.vertex = vecAddSets[k];
+                            vecChoose.push_back(sp);
+                        }
+                        else if (m_f[i] < dmax)
+                        {
+                            vecChoose.resize(0);
+                            sp.facility = i;
+                            sp.vertex = vecAddSets[k];
+                            vecChoose.push_back(sp);
+                            dmax = m_f[i];
+                        }
+                    }
+                }
+
+                ////
+                /*if (m_f[i] == dmax)
                 {
                     sp.facility = i;
                     sp.vertex = vecAddSets[k];
@@ -607,7 +655,7 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
                     sp.vertex = vecAddSets[k];
                     vecsp->push_back(sp);
                     dmax = m_f[i];
-                }
+                }*/
             }
         }
 
@@ -623,6 +671,30 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
             m_dTable[j].fird = m_dTable_copy[j].fird;
             m_dTable[j].secd = m_dTable_copy[j].secd;
         }
+
+        if (bChooseTabu)
+        {
+            if (bChoose)
+            {
+                if (m_f[vecChooseTabu[0].facility] < m_f[vecChoose[0].facility])
+                {
+                    vecsp->insert(vecsp->begin(), vecChooseTabu.begin(), vecChooseTabu.end());
+                }
+                else
+                {
+                    vecsp->insert(vecsp->begin(), vecChoose.begin(), vecChoose.end());
+                }
+            }
+            else
+            {
+                vecsp->insert(vecsp->begin(), vecChooseTabu.begin(), vecChooseTabu.end());
+            }
+        }
+        else if (bChoose)
+        {
+            vecsp->insert(vecsp->begin(), vecChoose.begin(), vecChoose.end());
+        }
+
     }
 
     m_Sc = dC; // 最大的服务边
@@ -797,6 +869,16 @@ void PCenter::PrintFAndDTable()
     }
 
     cout << endl;
+}
+
+bool PCenter::isTabu(int facility, int user, int iter)
+{
+    if (m_TabuList[facility][user] > iter)
+    {
+        return true;
+    }
+
+    return false;
 }
 
 hoStatus PCenter::AllocMemory()

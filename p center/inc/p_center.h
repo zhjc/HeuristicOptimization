@@ -57,6 +57,9 @@ public:
     void PrintFAndDTable();
 
 private:
+    bool isTabu(int facility, int user, int iter);
+
+private:
     hoStatus AllocMemory();
     void ReleaseMemory();
     void InitData();
