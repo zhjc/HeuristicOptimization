@@ -1012,7 +1012,7 @@ bool PCenter::isTabu(int facility, int user, int iter)
 
 void PCenter::setTabu(int facility, int user, int iter)
 {
-    m_TabuList[facility][user] = iter + rand() % 10 + m_nNodes / 5;
+    m_TabuList[facility][user] = iter + rand() % 10 + m_nNodes / 20;
 }
 
 hoStatus PCenter::AllocMemory()
