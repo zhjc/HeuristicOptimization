@@ -96,6 +96,7 @@ PCenter::PCenter()
 , m_fTable(hoNull)
 , m_fTable_copy(hoNull)
 , m_dTable_copy(hoNull)
+, m_runningMode(hoInitialize)
 , m_bestsols(hoNull)
 , m_cursols(hoNull)
 , m_Sc(0.0)
@@ -179,26 +180,31 @@ hoStatus PCenter::AddFacilityInternal()
 
         assert(vecmaxdis.size() > 0);
 
-        int nusercenter = vecmaxdis[rand() % vecmaxdis.size()];
+        // nusercenter表示最长服务边上的 用户结点
+        int user_of_longest_service_edge = vecmaxdis[rand() % vecmaxdis.size()];
 
-        LogInfo("selected node of longest edge is " + ToStr(nusercenter));
+        LogInfo("selected center node " + ToStr(user_of_longest_service_edge) 
+            + " with longest distance " + ToStr(dmaxdis));
 
         int nfacility = 0;
         vector<int> vecnewuser;
         for (int i = 0; i < m_nNodes; ++i)
         {
-            if (m_disSortedGraph[nusercenter][i] == m_fTable[nusercenter].firf)
+            if (m_disSortedGraph[user_of_longest_service_edge][i] == m_fTable[user_of_longest_service_edge].firf)
             {
+                // 遍历到为当前用户结点提供服务的设施点,直接退出,因为遍历的点已经排序
                 break;
             }
             else
             {
-                if (m_cursols[m_disSortedGraph[nusercenter][i]] == FACILITY_NODE)
+                if (m_cursols[m_disSortedGraph[user_of_longest_service_edge][i]] == FACILITY_NODE)
                 {
+                    // 最长边为半径的圆里已有服务结点时跳过
+                    // TODO:是否会造出两个设施太接近???
                     continue;
                 }
 
-                vecnewuser.push_back(m_disSortedGraph[nusercenter][i]);
+                vecnewuser.push_back(m_disSortedGraph[user_of_longest_service_edge][i]);
             }
         }
 
@@ -287,8 +293,11 @@ hoStatus PCenter::LocalSearch()
     st = AddFacilityInternal(); // make sure has p facilities
 
     LogInfo("Begin local search:");
+    m_runningMode = hoRunning;
+    
+    //PrintDistanceToFile(m_nNodes, m_distanceGraph);
 
-    long nmaxiter = 5000;
+    long nmaxiter = 500;
     long iter = 0;
     SwapPair sp;
 
@@ -304,31 +313,31 @@ hoStatus PCenter::LocalSearch()
 
     while (iter < nmaxiter)
     {
-        double dMaxDistance = 0.0;
-        vector<int> vecMaxDistanceNode;
+        double longest_service_edge = 0.0;
+        vector<int> vec_user_nodes_with_long_edge;
         for (int i = 0; i < m_nNodes; ++i)
         {
-            if (dMaxDistance < m_dTable[i].fird)
+            if (longest_service_edge < m_dTable[i].fird)
             {
-                dMaxDistance = m_dTable[i].fird;
-                vecMaxDistanceNode.clear();
-                vecMaxDistanceNode.push_back(i);
+                longest_service_edge = m_dTable[i].fird;
+                vec_user_nodes_with_long_edge.resize(0);
+                vec_user_nodes_with_long_edge.push_back(i);
             }
-            else if (dMaxDistance == m_dTable[i].fird)
+            else if (longest_service_edge == m_dTable[i].fird)
             {
-                vecMaxDistanceNode.push_back(i);
+                vec_user_nodes_with_long_edge.push_back(i);
             }
         }
 
-        assert(vecMaxDistanceNode.size()>0);
+        assert(vec_user_nodes_with_long_edge.size()>0);
 
-        int nSelect = vecMaxDistanceNode[rand() % vecMaxDistanceNode.size()];
+        int select_center_user_node = vec_user_nodes_with_long_edge[rand() % vec_user_nodes_with_long_edge.size()];
 
-        LogInfo("selected node of maximum length " + ToStr(nSelect) + "");
+        LogInfo("selected node of maximum length " + ToStr(select_center_user_node) + "");
 
         // try nodes in circle (nSelect, dMaxDistance), choose the best one
         vector<SwapPair> vecsps;
-        FindPair(nSelect, dMaxDistance, &vecsps, iter);
+        FindPair(select_center_user_node, longest_service_edge, &vecsps, iter);
 
         if (vecsps.empty())
         {
@@ -355,20 +364,20 @@ hoStatus PCenter::LocalSearch()
         RemoveFacility(sp.facility, &dSc);
 
         // 设置禁忌, 此处行为用户节点, 列为设施节点
-        m_TabuList[sp.facility][sp.vertex] = iter + rand() % 10 + m_nNodes / 10;
+        setTabu(sp.facility, sp.vertex, iter);
 
-        for (int i = 0; i < m_nNodes; ++i)
+        /*for (int i = 0; i < m_nNodes; ++i)
         {
             if (m_dTable[i].fird > m_curobjval)
             {
                 m_curobjval = m_dTable[i].fird;
             }
-        }
+        }*/
 
         // update best solution
-        if (m_curobjval < m_bestobjval)
+        if (dSc < m_bestobjval)
         {
-            m_bestobjval = m_curobjval;
+            m_bestobjval = dSc;
             for (int i = 0; i < m_nNodes; ++i)
             {
                 m_bestsols[i] = m_cursols[i];
@@ -489,7 +498,7 @@ hoStatus PCenter::FindSec(int curnode, int* f, double* d)
     return st;
 }
 
-hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, long iter)
+hoStatus PCenter::FindPair(int center_user_node, double longest_service_edge, vector<SwapPair>* vecsp, long iter)
 {
     hoStatus st = hoOK;
 
@@ -519,8 +528,8 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
     int selectnode = vecMaxDis[rand()%vecMaxDis.size()];
     LogInfo("find pair selected node " + ToStr(selectnode) + " for swap");*/
 
-    int selectnode = curf;
-    double dmax = dmaxdis;
+    int selectnode = center_user_node;
+    double dmax = DBL_MAX; // longest_service_edge;
 
     int serverofselectnode = m_fTable[selectnode].firf;
 
@@ -547,34 +556,50 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
     vector<SwapPair> vecChooseTabu;
     bool bChoose = false;
     bool bChooseTabu = false;
+    double costval = DBL_MAX;
+    double costvaltabu = DBL_MAX;
 
     // 存储现场
     //memcpy(m_fTable_copy, m_fTable, sizeof(FTable)*m_nNodes);
     //memcpy(m_dTable_copy, m_dTable, sizeof(DTable)*m_nNodes);
-    for (int j = 0; j < m_nNodes; ++j)
+    /*for (int j = 0; j < m_nNodes; ++j)
     {
         m_fTable_copy[j].firf = m_fTable[j].firf;
         m_fTable_copy[j].secf = m_fTable[j].secf;
         m_dTable_copy[j].fird = m_dTable[j].fird;
         m_dTable_copy[j].secd = m_dTable[j].secd;
+    }*/
+
+    /*vector<int> vec_facilities_can_delete;
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        if (m_cursols[i] == FACILITY_NODE)
+        {
+            vec_facilities_can_delete.push_back(i);
+        }
     }
+    assert(vec_facilities_can_delete.size() == m_nFacility);*/
 
     size_t naddset = vecAddSets.size();
     for (size_t k = 0; k < naddset; ++k)
     {
-        AddFacility(vecAddSets[k], &dC);
+        AddFacility(vecAddSets[k], &dC); // 执行完该操作后有p+1个设施结点,dC为最长的服务边
 
         for (int i = 0; i < m_nNodes; ++i)
         {
             m_f[i] = 0;
-            /*if (m_cursols[i] == FACILITY_NODE)
-            {
+            /*if (m_cursols[i] == FACILITY_NODE){
                 m_f[i] = 0;
             }*/
         }
 
         for (int i = 0; i < m_nNodes; ++i)
         {
+            if (i == vecAddSets[k])
+            {
+                continue;
+            }
+
             if (m_cursols[i] == USER_NODE)
             {
                 double minv = m_distanceGraph[i][vecAddSets[k]];
@@ -600,17 +625,22 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
 
             if (m_cursols[i] == FACILITY_NODE)
             {
-                ////
+                if (m_f[i] == 0)
+                {
+                    // show only the facility, has no vertexs
+                    continue;
+                }
+
                 if (m_f[i] <= dmax)
                 {
                     if (isTabu(vecAddSets[k], i, iter))
                     {
-                        bChooseTabu = true;
                         if (m_f[i] == dmax)
                         {
                             sp.facility = i;
                             sp.vertex = vecAddSets[k];
                             vecChooseTabu.push_back(sp);
+                            bChooseTabu = true;
                         }
                         else if (m_f[i] < dmax)
                         {
@@ -619,16 +649,18 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
                             sp.vertex = vecAddSets[k];
                             vecChooseTabu.push_back(sp);
                             dmax = m_f[i];
+                            costvaltabu = m_f[i];
+                            bChooseTabu = true;
                         }
                     }
                     else
                     {
-                        bChoose = true;
                         if (m_f[i] == dmax)
                         {
                             sp.facility = i;
                             sp.vertex = vecAddSets[k];
                             vecChoose.push_back(sp);
+                            bChoose = true;
                         }
                         else if (m_f[i] < dmax)
                         {
@@ -637,25 +669,11 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
                             sp.vertex = vecAddSets[k];
                             vecChoose.push_back(sp);
                             dmax = m_f[i];
+                            costval = m_f[i];
+                            bChoose = true;
                         }
                     }
                 }
-
-                ////
-                /*if (m_f[i] == dmax)
-                {
-                    sp.facility = i;
-                    sp.vertex = vecAddSets[k];
-                    vecsp->push_back(sp);
-                }
-                else if (m_f[i] < dmax)
-                {
-                    vecsp->resize(0);
-                    sp.facility = i;
-                    sp.vertex = vecAddSets[k];
-                    vecsp->push_back(sp);
-                    dmax = m_f[i];
-                }*/
             }
         }
 
@@ -664,40 +682,146 @@ hoStatus PCenter::FindPair(int curf, double dmaxdis, vector<SwapPair>* vecsp, lo
         // 恢复现场
         //memcpy(m_fTable, m_fTable_copy, sizeof(FTable)*m_nNodes);
         //memcpy(m_dTable, m_dTable_copy, sizeof(DTable)*m_nNodes);
-        for (int j = 0; j < m_nNodes; ++j)
+        /*for (int j = 0; j < m_nNodes; ++j)
         {
             m_fTable[j].firf = m_fTable_copy[j].firf;
             m_fTable[j].secf = m_fTable_copy[j].secf;
             m_dTable[j].fird = m_dTable_copy[j].fird;
             m_dTable[j].secd = m_dTable_copy[j].secd;
-        }
-
-        if (bChooseTabu)
-        {
-            if (bChoose)
-            {
-                if (m_f[vecChooseTabu[0].facility] < m_f[vecChoose[0].facility])
-                {
-                    vecsp->insert(vecsp->begin(), vecChooseTabu.begin(), vecChooseTabu.end());
-                }
-                else
-                {
-                    vecsp->insert(vecsp->begin(), vecChoose.begin(), vecChoose.end());
-                }
-            }
-            else
-            {
-                vecsp->insert(vecsp->begin(), vecChooseTabu.begin(), vecChooseTabu.end());
-            }
-        }
-        else if (bChoose)
-        {
-            vecsp->insert(vecsp->begin(), vecChoose.begin(), vecChoose.end());
-        }
-
+        }*/
     }
 
     m_Sc = dC; // 最大的服务边
+
+    if (bChooseTabu)
+    {
+        if (costvaltabu>0 && costvaltabu < m_bestobjval && costvaltabu < costval)
+        {
+            vecsp->insert(vecsp->begin(), vecChooseTabu.begin(), vecChooseTabu.end());
+            return st;
+        }
+
+        // 执行到此且bChooseTabu是false时,表示已被禁忌,需继续循环等待完成禁忌
+    }
+
+    if (bChoose)
+    {
+        vecsp->insert(vecsp->begin(), vecChoose.begin(), vecChoose.end());
+    }
+
+    return st;
+}
+
+hoStatus PCenter::FindPair_new(int center_user_node, double longest_service_edge, vector<SwapPair>* vecsp, long iter)
+{
+    hoStatus st = hoOK;
+
+    double dC = 0.0;
+
+    int selectnode = center_user_node;
+    double dmax = longest_service_edge;
+
+    int serverofselectnode = m_fTable[selectnode].firf;
+
+    // 找到selectnode为圆心，其到服务点的距离为半径的圆内的点，随机选择一个作为将要添加的结点，即选择Nwk
+    vector<int> vecAddSets;
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        if (m_disSortedGraph[selectnode][i] == serverofselectnode)
+        {
+            break;
+        }
+        else
+        {
+            if (m_cursols[m_disSortedGraph[selectnode][i]] == FACILITY_NODE)
+            {
+                continue;
+            }
+
+            vecAddSets.push_back(m_disSortedGraph[selectnode][i]); // ??是否包含中心设施
+        }
+    }
+
+    vector<int> vec_facilities_can_delete;
+    for (int i = 0; i < m_nNodes; ++i)
+    {
+        if (m_cursols[i] == FACILITY_NODE)
+        {
+            vec_facilities_can_delete.push_back(i);
+        }
+    }
+
+    assert(vec_facilities_can_delete.size() == m_nFacility);
+
+    double costval = DBL_MAX;
+    double costvaltabu = DBL_MAX;
+    vector<SwapPair> vecselectsp;
+    vector<SwapPair> vecselectsptabu;
+    bool bchoose = false;
+    bool bchoosetabu = false;
+
+    int debug_count = 0;
+
+    size_t naddset = vecAddSets.size();
+    for (size_t k = 0; k < naddset; ++k)
+    {
+        AddFacility(vecAddSets[k], &dC); // 执行完该操作后有p+1个设施结点
+
+        for (size_t index = 0; index < vec_facilities_can_delete.size(); ++index)
+        {
+            RemoveFacility(vec_facilities_can_delete[index], &dC);
+
+            if (isTabu(vecAddSets[k], vec_facilities_can_delete[index], iter))
+            {
+                if (dC <= costvaltabu)
+                {
+                    bchoosetabu = true;
+                    if (dC < costvaltabu)
+                    {
+                        costvaltabu = dC;
+                        vecselectsptabu.resize(0);
+                    }
+                    vecselectsptabu.push_back(SwapPair(vec_facilities_can_delete[index], vecAddSets[k]));
+                }
+                
+            }
+            else
+            {
+                if (dC <= costval)
+                {
+                    bchoose = true;
+                    if (dC < costval)
+                    {
+                        costval = dC;
+                        vecselectsp.resize(0);
+                    }
+                    vecselectsp.push_back(SwapPair(vec_facilities_can_delete[index], vecAddSets[k]));
+                }
+            }
+
+            AddFacility(vec_facilities_can_delete[index], &dC);
+
+            debug_count++;
+        }
+
+        RemoveFacility(vecAddSets[k], &dC);
+    }
+
+    m_Sc = dC; // 最大的服务边
+
+    if (bchoosetabu)
+    {
+        if (costvaltabu < m_bestobjval && costvaltabu<costval)
+        {
+            vecsp->insert(vecsp->begin(), vecselectsptabu.begin(), vecselectsptabu.end());
+            return st;
+        }
+    }
+    
+    if (bchoose)
+    {
+        vecsp->insert(vecsp->begin(), vecselectsp.begin(), vecselectsp.end());
+    }
 
     return st;
 }
@@ -835,7 +959,11 @@ hoStatus PCenter::ReadFile(const string& file)
 
 void PCenter::PrintResultInfo(bool onlyfacilit)
 {
-    cout << "best values: " << ToStr(m_bestobjval) << endl;
+    if (hoInitialize != m_runningMode)
+    {
+        cout << "best values: " << ToStr(m_bestobjval) << endl;
+    }
+    
     for (int i = 0; i < m_nNodes; ++i)
     {
         if (onlyfacilit)
@@ -850,6 +978,7 @@ void PCenter::PrintResultInfo(bool onlyfacilit)
             cout << i+1 << "-" << m_bestsols[i] << " ";
         }
     }
+
     cout << endl;
 }
 
@@ -879,6 +1008,11 @@ bool PCenter::isTabu(int facility, int user, int iter)
     }
 
     return false;
+}
+
+void PCenter::setTabu(int facility, int user, int iter)
+{
+    m_TabuList[facility][user] = iter + rand() % 10 + m_nNodes / 5;
 }
 
 hoStatus PCenter::AllocMemory()

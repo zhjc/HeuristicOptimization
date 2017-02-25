@@ -12,6 +12,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\common\utility.cpp" />
+    <ClCompile Include="..\..\..\utilities\jsoncpp\src\lib_json\json_reader.cpp" />
+    <ClCompile Include="..\..\..\utilities\jsoncpp\src\lib_json\json_value.cpp" />
+    <ClCompile Include="..\..\..\utilities\jsoncpp\src\lib_json\json_writer.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\population.cpp" />
     <ClCompile Include="..\..\src\p_center.cpp" />
@@ -65,7 +68,7 @@
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>../../inc;../../../inc;</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../inc;../../../inc;../../../utilities/jsoncpp/include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

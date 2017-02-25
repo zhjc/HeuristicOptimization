@@ -25,6 +25,13 @@ typedef enum
     hoInvalidFile
 } hoStatus;
 
+typedef enum
+{
+    hoInitialize,
+    hoRunning,
+    hoTerminate
+} hoRunningMode;
+
 #define hoNull 0 
 #define BUFFER_SIZE 128
 

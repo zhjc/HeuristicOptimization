@@ -26,6 +26,12 @@ struct SwapPair
 {
     int facility;
     int vertex;
+
+    SwapPair() :
+        facility(0), vertex(0) {}
+
+    SwapPair(int f, int v) :
+        facility(f), vertex(v) {}
 };
 
 class PCenter
@@ -49,6 +55,7 @@ public:
     hoStatus AddFacility(int facility, double* sc);
     hoStatus RemoveFacility(int facility, double* sc);
     hoStatus FindPair(int curf, double d, std::vector<SwapPair>* vecsp, long iter);
+    hoStatus FindPair_new(int curf, double d, std::vector<SwapPair>* vecsp, long iter);
     hoStatus FindSec(int curnode, int* f, double* d);
 
     hoStatus ReadFile(const std::string& file);
@@ -58,6 +65,7 @@ public:
 
 private:
     bool isTabu(int facility, int user, int iter);
+    void setTabu(int facility, int user, int iter);
 
 private:
     hoStatus AllocMemory();
@@ -76,6 +84,8 @@ private:
 
     FTable* m_fTable_copy;
     DTable* m_dTable_copy;
+
+    hoRunningMode m_runningMode;
 
     int m_nNodes;
     int m_nFacility;
