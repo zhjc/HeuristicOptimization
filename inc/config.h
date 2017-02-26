@@ -32,6 +32,14 @@ typedef enum
     hoTerminate
 } hoRunningMode;
 
+typedef enum
+{
+    hoLogDebug = 0,
+    hoLogInfo,
+    hoLogWarning,
+    hoLogError
+} hoLogType;
+
 #define hoNull 0 
 #define BUFFER_SIZE 128
 

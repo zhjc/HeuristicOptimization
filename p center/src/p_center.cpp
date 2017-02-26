@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "common/utility.h"
+#include "p_center_parameter.h"
 
 #include "population.h"
 
@@ -81,7 +82,7 @@ void PrintMatrix(T** a, int nr, int nc, bool tofile = false)
     }
 }
 
-PCenter::PCenter()
+PCenter::PCenter(PCenterConfigHandler* config)
 : m_nFacility(0)
 , m_nCurFacility(0)
 , m_nNodes(0)
@@ -100,6 +101,7 @@ PCenter::PCenter()
 , m_bestsols(hoNull)
 , m_cursols(hoNull)
 , m_Sc(0.0)
+, m_config(config)
 {
     // nothing to do
 }

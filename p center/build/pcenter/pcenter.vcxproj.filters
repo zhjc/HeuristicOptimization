@@ -39,12 +39,18 @@
     <ClCompile Include="..\..\..\utilities\jsoncpp\src\lib_json\json_writer.cpp">
       <Filter>jsoncpp</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\p_center_parameter.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\p_center.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\inc\population.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\inc\p_center_parameter.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

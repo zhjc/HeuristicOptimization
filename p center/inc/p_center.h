@@ -3,8 +3,13 @@
 #define _HO_P_CENTER_H
 
 #include "config.h"
+
 #include <string>
 #include <vector>
+
+HO_NAMESPACE_BEGIN(utility)
+class PCenterConfigHandler;
+HO_NAMESPACE_END
 
 HO_NAMESPACE_BEGIN(pcenter)
 
@@ -37,7 +42,7 @@ struct SwapPair
 class PCenter
 {
 public:
-    PCenter();
+    PCenter(utility::PCenterConfigHandler* config);
     ~PCenter();
 
     hoStatus RunSinglePhase(int run_type);
@@ -107,6 +112,8 @@ private:
     double* m_f;
 
     double m_Sc;
+
+    utility::PCenterConfigHandler* m_config;
 };
 
 HO_NAMESPACE_END

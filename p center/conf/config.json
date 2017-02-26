@@ -1,0 +1,19 @@
+{
+    "name": "pcenter",
+    "workpath": "D:\\Master\\Public\\HeuristicOptimization\\p center\\instances\\pmed\\",
+    "abusolutepath": "true",
+    "runsingle": "true",
+    "insname": "pmed1.txt",
+    "logfilename": "log_",
+    "config":
+    [
+        {
+            "divideofrandom": "10",
+            "tabu_f_u": "true",
+            "tabu_f_only": "false",
+            "tabu_u_only": "false",
+            "printtme": "true",
+            "lograndomseed": "true"
+        }
+    ]
+}

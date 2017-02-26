@@ -18,10 +18,12 @@
     <ClCompile Include="..\..\src\main.cpp" />
     <ClCompile Include="..\..\src\population.cpp" />
     <ClCompile Include="..\..\src\p_center.cpp" />
+    <ClCompile Include="..\..\src\p_center_parameter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\population.h" />
     <ClInclude Include="..\..\inc\p_center.h" />
+    <ClInclude Include="..\..\inc\p_center_parameter.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{778CC1AF-73F8-4806-B0D9-B4666A8BABA6}</ProjectGuid>
