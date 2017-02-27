@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
         if (st != hoOK)
         {
             ret = -1;
+            delete pc;
             break;
         }
 
@@ -41,6 +42,7 @@ int main(int argc, char* argv[])
         if (st != hoOK)
         {
             ret = -1;
+            delete pc;
             break;
         }
 

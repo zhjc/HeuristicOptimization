@@ -1004,17 +1004,55 @@ void PCenter::PrintFAndDTable()
 
 bool PCenter::isTabu(int facility, int user, int iter)
 {
-    if (m_TabuList[facility][user] > iter)
+    if (m_config->IsTabuFVPair())
     {
-        return true;
+        if (m_TabuList[facility][user] > iter)
+        {
+            return true;
+        }
     }
+
+    if (m_config->IsTabuFOnly())
+    {
+        if (m_TabuList[0][facility] > iter)
+        {
+            return true;
+        }
+    }
+
+    if (m_config->IsTabuVOnly())
+    {
+        if (m_TabuList[1][user] > iter)
+        {
+            return true;
+        }
+    }    
 
     return false;
 }
 
 void PCenter::setTabu(int facility, int user, int iter)
 {
-    m_TabuList[facility][user] = iter + rand() % 10 + m_nNodes / 20;
+    if (m_config->IsTabuFVPair())
+    {
+        m_TabuList[facility][user] = iter + rand() % 10 + m_config->GetAddLengthOfTabu() / 20;
+        return;
+    }
+    
+    if (m_config->IsTabuFOnly())
+    {
+        // 此处user已经被swap为设施节点
+        m_TabuList[0][user] = iter + rand() % 10 + m_config->GetAddLengthOfTabu() / 20;
+        return;
+    }
+    
+    if (m_config->IsTabuVOnly())
+    {
+        m_TabuList[1][facility] = iter + rand() % 10 + m_config->GetAddLengthOfTabu() / 20;
+        return;
+    }
+
+    assert(false);
 }
 
 hoStatus PCenter::AllocMemory()

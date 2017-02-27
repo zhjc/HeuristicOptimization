@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\common\ho_parameter.cpp" />
     <ClCompile Include="..\..\..\src\common\utility.cpp" />
     <ClCompile Include="..\..\..\utilities\jsoncpp\src\lib_json\json_reader.cpp" />
     <ClCompile Include="..\..\..\utilities\jsoncpp\src\lib_json\json_value.cpp" />
@@ -21,6 +22,7 @@
     <ClCompile Include="..\..\src\p_center_parameter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\inc\common\ho_parameter.h" />
     <ClInclude Include="..\..\inc\population.h" />
     <ClInclude Include="..\..\inc\p_center.h" />
     <ClInclude Include="..\..\inc\p_center_parameter.h" />

@@ -16,15 +16,15 @@
     <Filter Include="jsoncpp">
       <UniqueIdentifier>{a0aac8c1-8fd9-41e6-9b20-f326e1fea6d0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="utility">
+      <UniqueIdentifier>{e67a6142-af28-4dd4-ba1f-f79a7a7d6f3b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\p_center.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\common\utility.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\population.cpp">
@@ -42,6 +42,12 @@
     <ClCompile Include="..\..\src\p_center_parameter.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\common\utility.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\common\ho_parameter.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\p_center.h">
@@ -52,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="..\..\inc\p_center_parameter.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\inc\common\ho_parameter.h">
+      <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

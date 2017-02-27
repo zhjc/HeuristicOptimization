@@ -13,7 +13,9 @@
             "tabu_f_only": "false",
             "tabu_u_only": "false",
             "printtme": "true",
-            "lograndomseed": "true"
+            "lograndomseed": "true",
+            "mutationprob": "0.08",
+            "crossoverprob": "0.8"
         }
     ]
 }
