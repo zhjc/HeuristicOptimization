@@ -64,6 +64,11 @@ public:
         return m_strInsName;
     }
 
+    const std::string& GetInstanceFile() const
+    {
+        return m_strInsFile;
+    }
+
     bool IsPrintTime();
     bool IsLogToFile();
     bool IsLogRandomSeed();
@@ -86,6 +91,7 @@ private:
 
     bool m_bRunSingleIns;
     std::string m_strInsName;
+    std::string m_strInsFile;
 
     std::string m_strInstPath;
     std::string m_strWorkPath;

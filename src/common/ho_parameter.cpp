@@ -98,6 +98,11 @@ hoStatus HoConfigHandler::ParseConfigFile(const std::string& strConfFile)
                 }
             }
 
+            if (!root["instfile"].isNull())
+            {
+                m_strInsFile = root["instfile"].asString();
+            }
+
             if (!root["config"].isNull())
             {
                 int configsize = root["config"].size();

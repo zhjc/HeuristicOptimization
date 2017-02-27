@@ -33,8 +33,9 @@ int main(int argc, char* argv[])
     if (!bRunSingle)
     {
         HoFileHandler* pfh = new HoFileHandler();
-        pfh->BrouseDirectory(pcp->GetInstPath()+pcp->GetInstanceName());
-        pfh->GetFilesSet(&vecFiles);
+        //pfh->BrouseDirectory(pcp->GetInstPath()+pcp->GetInstanceName());
+        //pfh->GetFilesSet(&vecFiles);
+        pfh->GetFilesSetFromFile(pcp->GetInstanceFile(), &vecFiles);
     }
     else
     {
@@ -55,13 +56,13 @@ int main(int argc, char* argv[])
 
             string strlogprefixext = strLogFileName.substr(last+1, strLogFileName.size() - 4);
             string strlogprefix;
-            for (int i = 0; i < strlogprefixext.size(); ++i)
+            for (size_t j = 0; j < strlogprefixext.size(); ++j)
             {
-                if (strlogprefixext[i] == '.')
+                if (strlogprefixext[j] == '.')
                 {
                     break;
                 }
-                strlogprefix.push_back(strlogprefixext[i]);
+                strlogprefix.push_back(strlogprefixext[j]);
             }
             HoLogger* plogger = new HoLogger(pcp->GetWorkPath()+strlogprefix+"_log.txt");
 

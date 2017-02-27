@@ -2,6 +2,7 @@
 #include "common/ho_file_handler.h"
 
 #include <io.h>
+#include <direct.h>
 
 using namespace std;
 using namespace utility;

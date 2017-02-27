@@ -886,9 +886,9 @@ hoStatus PCenter::ReadFile(const string& file)
                 return hoInvalidFile;
             }
 
-            in >> m_nNodes;
+            in >> m_nNodes >> m_nFacility;
 
-            m_nFacility = m_nNodes / 15; // TODO: set number of facility
+            //m_nFacility = m_nNodes / 15; // TODO: set number of facility
 
             st = AllocMemory();
             if (st != hoOK)

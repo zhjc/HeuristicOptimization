@@ -27,6 +27,8 @@ public:
         pvec->insert(pvec->begin(), m_vecFiles.begin(), m_vecFiles.end());
     }
 
+    hoStatus GetFilesSetFromFile(const std::string& strFilePath, std::vector<std::string>* pvec);
+
 private:
     bool m_bBrouseRecursion;
     std::string m_strCurDir;

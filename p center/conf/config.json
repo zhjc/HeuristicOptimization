@@ -5,6 +5,7 @@
     "abusolutepath": "true",
     "runsingle": "false",
     "insname": "pmed1.txt",
+    "instfile": "D:\\workspace\\HeuristicOptimization\\p center\\instances\\results\\instances.txt",
     "logfilename": "log_",
     "config":
     [
