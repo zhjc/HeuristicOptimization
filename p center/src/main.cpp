@@ -5,6 +5,7 @@
 #include "p_center_parameter.h"
 
 #include "common/ho_file_handler.h"
+#include "common/utility.h"
 
 using namespace std;
 using namespace utility;
@@ -42,6 +43,8 @@ int main(int argc, char* argv[])
         vecFiles.push_back(pcp->GetInstPath()+pcp->GetInstanceName());
     }
 
+    int com_count = 0;
+
     for (size_t i = 0; i < vecFiles.size(); ++i)
     {
         do
@@ -64,6 +67,10 @@ int main(int argc, char* argv[])
                 }
                 strlogprefix.push_back(strlogprefixext[j]);
             }
+
+            strlogprefix += "_";
+            strlogprefix += ToStr(com_count);
+
             HoLogger* plogger = new HoLogger(pcp->GetWorkPath()+strlogprefix+"_log.txt");
 
             pcenter::PCenter* pc = new pcenter::PCenter(pcp);
@@ -89,7 +96,9 @@ int main(int argc, char* argv[])
 
             delete pc;
             delete plogger;
-        } while (false);
+
+            com_count++;
+        } while (com_count<5);
     }
     
     delete pcp;

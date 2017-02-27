@@ -310,7 +310,7 @@ hoStatus PCenter::LocalSearch()
     
     //PrintDistanceToFile(m_nNodes, m_distanceGraph);
 
-    long nmaxiter = 2000;
+    long nmaxiter = m_config->GetIterNum();
     long iter = 0;
     SwapPair sp;
 
@@ -323,6 +323,8 @@ hoStatus PCenter::LocalSearch()
             m_TabuList[i][j] = 0;
         }
     }
+
+    string strMsg;
 
     while (iter < nmaxiter)
     {
@@ -346,7 +348,7 @@ hoStatus PCenter::LocalSearch()
 
         int select_center_user_node = vec_user_nodes_with_long_edge[rand() % vec_user_nodes_with_long_edge.size()];
 
-        LogInfo("selected node of maximum length " + ToStr(select_center_user_node) + "");
+        //LogInfo("selected node of maximum length " + ToStr(select_center_user_node) + "");
 
         // try nodes in circle (nSelect, dMaxDistance), choose the best one
         vector<SwapPair> vecsps;
@@ -368,8 +370,9 @@ hoStatus PCenter::LocalSearch()
             break;
         }
 
-        LogInfo("current iter:" + ToStr(iter));
-        LogInfo("selected node " + ToStr(sp.vertex) + " for swap " + ToStr(sp.facility));
+        strMsg = "iter " + ToStr(iter);
+        strMsg += ": node " + ToStr(sp.vertex) + " swap " + ToStr(sp.facility);
+        LogInfo(strMsg);
 
         // do swap operation and set TabuList
         double dSc = 0.0;

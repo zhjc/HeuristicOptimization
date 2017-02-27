@@ -17,6 +17,7 @@ HoConfigHandler::HoConfigHandler(const std::string& conffile)
 , m_logLevel(hoLogInfo)
 , m_timeStart(0)
 , m_timeStop(0)
+, m_nIterNum(500)
 {
     hoStatus rt = ParseConfigFile(conffile);
 }
@@ -101,6 +102,12 @@ hoStatus HoConfigHandler::ParseConfigFile(const std::string& strConfFile)
             if (!root["instfile"].isNull())
             {
                 m_strInsFile = root["instfile"].asString();
+            }
+
+            if (!root["iternum"].isNull())
+            {
+                strTmp = root["iternum"].asString();
+                m_nIterNum = atoi(strTmp.c_str());
             }
 
             if (!root["config"].isNull())

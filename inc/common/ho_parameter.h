@@ -69,6 +69,11 @@ public:
         return m_strInsFile;
     }
 
+    int GetIterNum() const
+    {
+        return m_nIterNum;
+    }
+
     bool IsPrintTime();
     bool IsLogToFile();
     bool IsLogRandomSeed();
@@ -96,6 +101,8 @@ private:
     std::string m_strInstPath;
     std::string m_strWorkPath;
     bool m_bAbsolutePath;
+
+    int m_nIterNum;
 };
 
 HO_NAMESPACE_END
