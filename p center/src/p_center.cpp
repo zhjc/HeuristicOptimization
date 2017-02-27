@@ -310,7 +310,7 @@ hoStatus PCenter::LocalSearch()
     
     //PrintDistanceToFile(m_nNodes, m_distanceGraph);
 
-    long nmaxiter = 500;
+    long nmaxiter = 2000;
     long iter = 0;
     SwapPair sp;
 
@@ -899,7 +899,8 @@ hoStatus PCenter::ReadFile(const string& file)
             InitData();
 
             tspPoint* tp = new tspPoint[m_nNodes];
-            int num, co_x, co_y;
+            int num;
+            double co_x, co_y;
             for (int i = 0; i < m_nNodes; ++i)
             {
                 in >> num >> co_x >> co_y;
