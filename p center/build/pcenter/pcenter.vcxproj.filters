@@ -48,6 +48,12 @@
     <ClCompile Include="..\..\..\src\common\ho_parameter.cpp">
       <Filter>utility</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\common\ho_logger.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\common\ho_file_handler.cpp">
+      <Filter>utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\inc\p_center.h">
@@ -60,6 +66,15 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\inc\common\ho_parameter.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\inc\common\ho_logger.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\inc\common\utility.h">
+      <Filter>utility</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\inc\common\ho_file_handler.h">
       <Filter>utility</Filter>
     </ClInclude>
   </ItemGroup>

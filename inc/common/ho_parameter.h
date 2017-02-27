@@ -3,6 +3,8 @@
 #define HO_PARAMETER_H
 
 #include "config.h"
+#include "common/ho_logger.h"
+
 #include <ctime>
 #include <string>
 
@@ -47,6 +49,21 @@ public:
         m_strLogFile = strLogFileName;
     }
 
+    const std::string& GetWorkPath() const
+    {
+        return m_strWorkPath;
+    }
+
+    const std::string& GetInstPath() const
+    {
+        return m_strInstPath;
+    }
+
+    const std::string& GetInstanceName() const
+    {
+        return m_strInsName;
+    }
+
     bool IsPrintTime();
     bool IsLogToFile();
     bool IsLogRandomSeed();
@@ -70,6 +87,7 @@ private:
     bool m_bRunSingleIns;
     std::string m_strInsName;
 
+    std::string m_strInstPath;
     std::string m_strWorkPath;
     bool m_bAbsolutePath;
 };

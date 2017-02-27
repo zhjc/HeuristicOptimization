@@ -40,9 +40,19 @@ public:
         return m_dMutationProb;
     }
 
+    void SetMutationProb(double dMutation)
+    {
+        m_dMutationProb = dMutation;
+    }
+
     double GetCrossoverProb()
     {
         return m_dCrossoverProb;
+    }
+
+    void SetCrossoverProb(double dCross)
+    {
+        m_dCrossoverProb = dCross;
     }
     
     hoStatus ParseConfigFile(const std::string& strConfFile);

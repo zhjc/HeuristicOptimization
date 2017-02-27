@@ -6,18 +6,6 @@ using namespace std;
 
 HO_NAMESPACE_BEGIN(utility)
 
-#ifdef PRINT_LOG
-void LogInfo(const std::string& str)
-{
-#ifdef LOG_TO_FILE
-#else
-    std::cout << str << std::endl;
-#endif // LOG_TO_FILE
-}
-#else
-void LogInfo(const std::string& str){}
-#endif
-
 void PrintDistanceToFile(int nNode, double** distanceMatrix)
 {
     ofstream out;

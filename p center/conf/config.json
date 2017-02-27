@@ -1,8 +1,9 @@
 {
     "name": "pcenter",
-    "workpath": "D:\\Master\\Public\\HeuristicOptimization\\p center\\instances\\pmed\\",
+    "instpath": "D:\\workspace\\HeuristicOptimization\\p center\\instances\\pmed\\",
+    "workpath": "D:\\workspace\\HeuristicOptimization\\p center\\instances\\results\\",
     "abusolutepath": "true",
-    "runsingle": "true",
+    "runsingle": "false",
     "insname": "pmed1.txt",
     "logfilename": "log_",
     "config":

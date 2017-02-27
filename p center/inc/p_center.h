@@ -9,6 +9,7 @@
 
 HO_NAMESPACE_BEGIN(utility)
 class PCenterConfigHandler;
+class HoLogger;
 HO_NAMESPACE_END
 
 HO_NAMESPACE_BEGIN(pcenter)
@@ -68,6 +69,11 @@ public:
     void PrintResultInfo(bool onlyfacility=true);
     void PrintFAndDTable();
 
+    void SetLogger(utility::HoLogger* pLogger)
+    {
+        m_logger = pLogger;
+    }
+
 private:
     bool isTabu(int facility, int user, int iter);
     void setTabu(int facility, int user, int iter);
@@ -114,6 +120,8 @@ private:
     double m_Sc;
 
     utility::PCenterConfigHandler* m_config;
+
+    utility::HoLogger* m_logger;
 };
 
 HO_NAMESPACE_END

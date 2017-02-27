@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "common/utility.h"
+#include "common/ho_logger.h"
 #include "p_center_parameter.h"
 
 #include "population.h"
@@ -34,6 +35,15 @@ struct tspPoint
     double x;
     double y;
 };
+
+#ifdef PRINT_LOG
+#undef LogInfo
+#define LogInfo(n) if(m_logger)m_logger->LogInfo(n)
+#else
+#undef LogInfo(n)
+#define LogInfo(n)
+#endif
+
 
 fileType GetInputFileType(const string& file);
 
@@ -102,6 +112,7 @@ PCenter::PCenter(PCenterConfigHandler* config)
 , m_cursols(hoNull)
 , m_Sc(0.0)
 , m_config(config)
+, m_logger(hoNull)
 {
     // nothing to do
 }
@@ -961,9 +972,10 @@ hoStatus PCenter::ReadFile(const string& file)
 
 void PCenter::PrintResultInfo(bool onlyfacilit)
 {
+    string strResult;
     if (hoInitialize != m_runningMode)
     {
-        cout << "best values: " << ToStr(m_bestobjval) << endl;
+        strResult = "best values: " + ToStr(m_bestobjval) + "\n";
     }
     
     for (int i = 0; i < m_nNodes; ++i)
@@ -972,16 +984,16 @@ void PCenter::PrintResultInfo(bool onlyfacilit)
         {
             if (m_cursols[i] == FACILITY_NODE)
             {
-                cout << i+1 << " ";
+                strResult += ToStr(i+1) + " ";
             }
         }
         else 
         {
-            cout << i+1 << "-" << m_bestsols[i] << " ";
+            strResult += ToStr(i+1) + "-" + ToStr(m_bestsols[i]) + " ";
         }
     }
 
-    cout << endl;
+    LogInfo(strResult);
 }
 
 void PCenter::PrintFAndDTable()

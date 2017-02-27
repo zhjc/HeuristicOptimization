@@ -4,6 +4,8 @@
 #include "p_center.h"
 #include "p_center_parameter.h"
 
+#include "common/ho_file_handler.h"
+
 using namespace std;
 using namespace utility;
 
@@ -21,34 +23,74 @@ int main(int argc, char* argv[])
     PCenterConfigHandler* pcp = new PCenterConfigHandler(strfilename);
 
     int ret = 0;
+    bool bRunSingle = pcp->IsRunSingleIns();
 
     // 区分运行的算法类型（基于单个或是种群算法）
     // 种群中算法类别
     int run_type = 0;
 
-    do 
+    vector<string> vecFiles;
+    if (!bRunSingle)
     {
-        pcenter::PCenter* pc = new pcenter::PCenter(pcp);
-        hoStatus st = hoOK;
-        st = pc->ReadFile(strfilename);
-        if (st != hoOK)
+        HoFileHandler* pfh = new HoFileHandler();
+        pfh->BrouseDirectory(pcp->GetInstPath()+pcp->GetInstanceName());
+        pfh->GetFilesSet(&vecFiles);
+    }
+    else
+    {
+        vecFiles.push_back(pcp->GetInstPath()+pcp->GetInstanceName());
+    }
+
+    for (size_t i = 0; i < vecFiles.size(); ++i)
+    {
+        do
         {
-            ret = -1;
+            // 拼接日志文件名称
+            string strLogFileName = vecFiles[i];
+            string::size_type last = strLogFileName.rfind("\\");
+            if (last == string::npos)
+            {
+                last = strLogFileName.rfind("/");
+            }
+
+            string strlogprefixext = strLogFileName.substr(last+1, strLogFileName.size() - 4);
+            string strlogprefix;
+            for (int i = 0; i < strlogprefixext.size(); ++i)
+            {
+                if (strlogprefixext[i] == '.')
+                {
+                    break;
+                }
+                strlogprefix.push_back(strlogprefixext[i]);
+            }
+            HoLogger* plogger = new HoLogger(pcp->GetWorkPath()+strlogprefix+"_log.txt");
+
+            pcenter::PCenter* pc = new pcenter::PCenter(pcp);
+
+            pc->SetLogger(plogger);
+
+            hoStatus st = hoOK;
+            st = pc->ReadFile(vecFiles[i]);
+            if (st != hoOK)
+            {
+                ret = -1;
+                delete pc;
+                break;
+            }
+
+            st = pc->RunSinglePhase(run_type);
+            if (st != hoOK)
+            {
+                ret = -1;
+                delete pc;
+                break;
+            }
+
             delete pc;
-            break;
-        }
-
-        st = pc->RunSinglePhase(run_type);
-        if (st != hoOK)
-        {
-            ret = -1;
-            delete pc;
-            break;
-        }
-
-        delete pc;
-    } while (false);
-
+            delete plogger;
+        } while (false);
+    }
+    
     delete pcp;
 
 	return ret;

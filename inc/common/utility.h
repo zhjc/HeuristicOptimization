@@ -16,8 +16,6 @@ std::string ToStr(T n)
     return stream.str();
 }
 
-void LogInfo(const std::string& str);
-
 void PrintDistanceToFile(int nNode, double** distanceMatrix);
 
 int ParseConfigFile();

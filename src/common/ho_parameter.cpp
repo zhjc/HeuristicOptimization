@@ -14,6 +14,9 @@ HoConfigHandler::HoConfigHandler(const std::string& conffile)
 , m_bPrintTime(true)
 , m_bLogToFile(true)
 , m_bLogRandomSeed(true)
+, m_logLevel(hoLogInfo)
+, m_timeStart(0)
+, m_timeStop(0)
 {
     hoStatus rt = ParseConfigFile(conffile);
 }
@@ -54,22 +57,44 @@ hoStatus HoConfigHandler::ParseConfigFile(const std::string& strConfFile)
         if (reader.parse(in, root))
         {
             string strTmp;
-            if (!root["name"].isNull())
+            if (!root["insname"].isNull())
             {
-                m_strInsName = root["name"].asString();
+                m_strInsName = root["insname"].asString();
             }
 
             if (!root["workpath"].isNull())
             {
                 m_strWorkPath = root["workpath"].asString();
+                if (m_strWorkPath.back() != '\\' && m_strWorkPath.back() != '/')
+                {
+                    m_strWorkPath += "\\";
+                }
             }
 
-            if (!root["imgabusolutepath"].isNull())
+            if (!root["instpath"].isNull())
             {
-                string strabu = root["imgabusolutepath"].asString();
+                m_strInstPath = root["instpath"].asString();
+                if (m_strInstPath.back() != '\\' && m_strInstPath.back() != '/')
+                {
+                    m_strInstPath += "\\";
+                }
+            }
+
+            if (!root["abusolutepath"].isNull())
+            {
+                string strabu = root["abusolutepath"].asString();
                 if (strabu == "true")
                 {
                     m_bAbsolutePath = true;
+                }
+            }
+
+            if (!root["runsingle"].isNull())
+            {
+                string strabu = root["runsingle"].asString();
+                if (strabu == "false")
+                {
+                    m_bRunSingleIns = false;
                 }
             }
 
