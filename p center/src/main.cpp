@@ -7,6 +7,8 @@
 #include "common/ho_file_handler.h"
 #include "common/utility.h"
 
+#include <ctime>
+
 using namespace std;
 using namespace utility;
 
@@ -26,8 +28,8 @@ int main(int argc, char* argv[])
     int ret = 0;
     bool bRunSingle = pcp->IsRunSingleIns();
 
-    // Çø·ÖÔËĞĞµÄËã·¨ÀàĞÍ£¨»ùÓÚµ¥¸ö»òÊÇÖÖÈºËã·¨£©
-    // ÖÖÈºÖĞËã·¨Àà±ğ
+    // åŒºåˆ†è¿è¡Œçš„ç®—æ³•ç±»å‹ï¼ˆåŸºäºå•ä¸ªæˆ–æ˜¯ç§ç¾¤ç®—æ³•ï¼‰
+    // ç§ç¾¤ä¸­ç®—æ³•ç±»åˆ«
     int run_type = 0;
 
     vector<string> vecFiles;
@@ -43,13 +45,13 @@ int main(int argc, char* argv[])
         vecFiles.push_back(pcp->GetInstPath()+pcp->GetInstanceName());
     }
 
-    int com_count = 0;
+    int com_count = 6;
 
     for (size_t i = 0; i < vecFiles.size(); ++i)
     {
         do
         {
-            // Æ´½ÓÈÕÖ¾ÎÄ¼şÃû³Æ
+            // æ‹¼æ¥æ—¥å¿—æ–‡ä»¶åç§°
             string strLogFileName = vecFiles[i];
             string::size_type last = strLogFileName.rfind("\\");
             if (last == string::npos)
@@ -86,7 +88,12 @@ int main(int argc, char* argv[])
                 break;
             }
 
+            clock_t start = clock();
             st = pc->RunSinglePhase(run_type);
+            clock_t end = clock();
+
+            cout << "run time:" << (double)(end - start) / CLK_TCK << "s" << endl;
+
             if (st != hoOK)
             {
                 ret = -1;

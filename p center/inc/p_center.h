@@ -15,6 +15,8 @@ HO_NAMESPACE_END
 HO_NAMESPACE_BEGIN(pcenter)
 
 #define PRINT_LOG
+//#define OPT_FIND_SEC
+//#define OUTPUT_NW
 
 struct FTable
 {
@@ -62,7 +64,8 @@ public:
     hoStatus RemoveFacility(int facility, double* sc);
     hoStatus FindPair(int curf, double d, std::vector<SwapPair>* vecsp, long iter);
     hoStatus FindPair_new(int curf, double d, std::vector<SwapPair>* vecsp, long iter);
-    hoStatus FindSec(int curnode, int* f, double* d);
+    hoStatus FindPair_3(int, double, std::vector<SwapPair>*, long);
+    hoStatus FindSec(int curnode, int delf, int* f, double* d, bool isfirf=true);
 
     hoStatus ReadFile(const std::string& file);
 
@@ -92,35 +95,36 @@ private:
 private:
     FTable* m_fTable;
     DTable* m_dTable;
-
     FTable* m_fTable_copy;
     DTable* m_dTable_copy;
 
     hoRunningMode m_runningMode;
 
     int m_nNodes;
+    int m_nEdges;
     int m_nFacility;
     int m_nCurFacility;
-    int m_nEdges;
-
+    
     double m_bestobjval;
     int* m_bestsols;
 
     double m_curobjval;
     int* m_cursols;
+
+    int* m_facilities;
     
     double ** m_distanceGraph;
     int ** m_disSortedGraph;
-    int ** m_disSequenceGraph;
 
-    int** m_TabuList;
+    int* m_tabuNode;
+    int* m_tabuFacility;
 
     double* m_f;
 
+
+    // discard
     double m_Sc;
-
     utility::PCenterConfigHandler* m_config;
-
     utility::HoLogger* m_logger;
 };
 

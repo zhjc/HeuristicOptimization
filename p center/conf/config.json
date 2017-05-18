@@ -1,13 +1,13 @@
 {
     "name": "pcenter",
-    "instpath": "D:\\workspace\\HeuristicOptimization\\p center\\instances\\pmed\\",
-    "workpath": "D:\\workspace\\HeuristicOptimization\\p center\\instances\\results\\",
+    "instpath": "D:\\Master\\Public\\HeuristicOptimization\\p center\\instances\\pmed\\",
+    "workpath": "D:\\Master\\Public\\HeuristicOptimization\\p center\\instances\\results\\",
     "abusolutepath": "true",
     "runsingle": "false",
     "insname": "pmed1.txt",
-    "instfile": "D:\\workspace\\HeuristicOptimization\\p center\\instances\\results\\instances_tsp.txt",
+    "instfile": "D:\\Master\\Public\\HeuristicOptimization\\p center\\instances\\results\\instances.txt",
     "logfilename": "log_",
-    "iternum": "5000",
+    "iternum": "50000",
     "config":
     [
         {
